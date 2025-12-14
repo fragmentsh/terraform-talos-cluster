@@ -1,0 +1,57 @@
+{
+  "extends": [
+    ":separateMajorReleases",
+    ":ignoreUnstable",
+    ":prImmediately",
+    ":updateNotScheduled",
+    ":automergeDisabled",
+    ":disableRateLimiting",
+    ":ignoreModulesAndTests",
+    ":gitSignOff",
+    "group:monorepos",
+    "group:recommended",
+    "helpers:disableTypesNodeMajor",
+    "workarounds:all",
+    ":automergeDigest",
+    ":automergePatch",
+    ":automergeMinor",
+    ":dependencyDashboard"
+  ],
+  "baseBranches": [
+    "main"
+  ],
+  "enabledManagers": [
+    "github-actions",
+    "pre-commit",
+    "terraform"
+  ],
+  "semanticCommits": "enabled",
+  "automergeType": "pr-comment",
+  "automergeComment": "renovate:merge",
+  "commitMessageExtra": "to {{newVersion}} (was {{currentVersion}})",
+  "prHourlyLimit": 20,
+  "packageRules": [
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "semanticCommitScope": "ci",
+      "semanticCommitType": "chore"
+    },
+    {
+      "matchManagers": [
+        "pre-commit"
+      ],
+      "semanticCommitScope": "ci",
+      "semanticCommitType": "chore"
+    },
+    {
+      "matchManagers": [
+        "terraform"
+      ],
+      "semanticCommitScope": "tf",
+      "semanticCommitType": "feat",
+      "automerge": false
+    }
+  ]
+}

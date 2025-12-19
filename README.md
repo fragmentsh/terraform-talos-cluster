@@ -1,4 +1,4 @@
-# terraform-kubernetes-addons
+# terraform-talos-cluster
 
 [![terraform-kubernetes-addons](https://github.com/fragmentsh/terraform-kubernetes-addons/workflows/terraform-kubernetes-addons/badge.svg)](https://github.com/fragmentsh/terraform-kubernetes-addons/actions?query=workflow%3Aterraform-kubernetes-addons)
 

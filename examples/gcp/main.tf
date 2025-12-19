@@ -134,4 +134,3 @@ data "talos_client_configuration" "talos" {
     module.node_pools.external_ips
   )
 }
-

@@ -1,6 +1,7 @@
 # terraform-talos-cluster
 
-[![terraform-kubernetes-addons](https://github.com/fragmentsh/terraform-kubernetes-addons/workflows/terraform-kubernetes-addons/badge.svg)](https://github.com/fragmentsh/terraform-kubernetes-addons/actions?query=workflow%3Aterraform-kubernetes-addons)
+[![Pre-Commit](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/pre-commit.yml)
+[![Release](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/release.yml/badge.svg)](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/release.yml)
 
 ## About
 

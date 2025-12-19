@@ -18,6 +18,8 @@ Set of modules to help deploy hybrids [Talos](https://www.talos.dev/) Kubernetes
 
 Modules are available for various infrastructure providers.
 
+Any contribution supporting a new cloud provider is welcomed.
+
 ### Control plane
 
 - [GCP](./modules/control-plane/gcp)
@@ -25,14 +27,6 @@ Modules are available for various infrastructure providers.
 ### Node Pools
 
 - [GCP](./modules/node-pools/gcp)
-
-Any contribution supporting a new cloud provider is welcomed.
-
-- [Generic](./modules/generic)
-- [AWS](./modules/aws)
-- [Scaleway](./modules/scaleway)
-- [GCP](./modules/google)
-- [Azure](./modules/azure)
 
 ## Examples
 

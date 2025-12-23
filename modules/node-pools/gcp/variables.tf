@@ -19,6 +19,19 @@ variable "talos_version" {
   default     = "v1.11.6"
 }
 
+variable "talos_image" {
+  description = "The Talos OS image details."
+  type = object({
+    family  = optional(string, "talos")
+    name    = optional(string, "talos-v1-11-6-gcp-amd64")
+    project = optional(string)
+  })
+  default = {
+    family = "talos"
+    name   = "talos-v1-11-6-gcp-amd64"
+  }
+}
+
 variable "kubernetes_version" {
   description = "The version of Kubernetes to deploy on the Talos control plane."
   type        = string
@@ -71,8 +84,9 @@ variable "node_pools" {
       project = optional(string)
       }),
       {
-        family = "talos"
-        name   = "talos-v1-11-5-intelu-gvnic"
+        family  = null
+        name    = null
+        project = null
       }
     )
     config_patches = optional(list(any), [])

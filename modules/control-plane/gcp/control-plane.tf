@@ -13,7 +13,7 @@ locals {
 
 resource "google_service_account" "control_plane" {
   provider   = google-beta
-  account_id = var.cluster_name
+  account_id = "${var.cluster_name}-cp"
 }
 
 resource "google_compute_address" "control_plane_api_ip" {
@@ -28,19 +28,6 @@ resource "google_compute_forwarding_rule" "control_plane" {
   ip_protocol           = "TCP"
   target                = google_compute_region_target_tcp_proxy.control_plane.id
   port_range            = "6443"
-  region                = var.region
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-  network               = var.control_plane.network
-  network_tier          = "PREMIUM"
-}
-
-resource "google_compute_forwarding_rule" "control_plane_talos" {
-  provider              = google-beta
-  name                  = "${var.cluster_name}-control-plane-talos"
-  ip_address            = google_compute_address.control_plane_api_ip.id
-  ip_protocol           = "TCP"
-  target                = google_compute_region_target_tcp_proxy.control_plane.id
-  port_range            = "50000"
   region                = var.region
   load_balancing_scheme = "EXTERNAL_MANAGED"
   network               = var.control_plane.network
@@ -103,36 +90,11 @@ resource "google_compute_region_backend_service" "control_plane" {
   }
 }
 
-resource "google_compute_region_backend_service" "control_plane_talos" {
-  provider              = google-beta
-  name                  = "${var.cluster_name}-control-plane-talos"
-  protocol              = "TCP"
-  port_name             = "talos-api"
-  health_checks         = [google_compute_region_health_check.control_plane.self_link]
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-
-  log_config {
-    enable = true
-  }
-  backend {
-    group           = module.control_plane_mig.instance_group
-    balancing_mode  = "UTILIZATION"
-    capacity_scaler = 1.0
-  }
-}
-
 resource "google_compute_region_target_tcp_proxy" "control_plane" {
   provider        = google-beta
   name            = "${var.cluster_name}-control-plane"
   region          = var.region
   backend_service = google_compute_region_backend_service.control_plane.self_link
-}
-
-resource "google_compute_region_target_tcp_proxy" "control_plane_talos" {
-  provider        = google-beta
-  name            = "${var.cluster_name}-control-plane-talos"
-  region          = var.region
-  backend_service = google_compute_region_backend_service.control_plane_talos.self_link
 }
 
 resource "google_compute_region_health_check" "control_plane" {
@@ -150,25 +112,6 @@ resource "google_compute_region_health_check" "control_plane" {
 
   tcp_health_check {
     port               = "6443"
-    port_specification = "USE_FIXED_PORT"
-  }
-}
-
-resource "google_compute_region_health_check" "control_plane_talos" {
-  provider = google-beta
-  name     = "${var.cluster_name}-control-plane-talos"
-
-  timeout_sec         = 2
-  check_interval_sec  = 10
-  healthy_threshold   = 2
-  unhealthy_threshold = 4
-
-  log_config {
-    enable = true
-  }
-
-  tcp_health_check {
-    port               = "50000"
     port_specification = "USE_FIXED_PORT"
   }
 }
@@ -201,9 +144,9 @@ module "control_plane_instance_template" {
   project_id = var.project_id
 
   /* image */
-  source_image_project = coalesce(var.control_plane.image.project, var.project_id)
-  source_image_family  = var.control_plane.image.family
-  source_image         = var.control_plane.image.name
+  source_image_project = coalesce(var.control_plane.image.project, var.talos_image.project, var.project_id)
+  source_image_family  = coalesce(var.control_plane.image.family, var.talos_image.family)
+  source_image         = coalesce(var.control_plane.image.name, var.talos_image.name)
 
   /* disks */
   disk_size_gb = var.control_plane.disk_size_gb
@@ -286,9 +229,6 @@ data "talos_machine_configuration" "control_plane" {
   config_patches = [
     yamlencode({
       machine = {
-        certSANs = [
-          google_compute_address.control_plane_api_ip.address
-        ]
         network = {
           kubespan = {
             enabled = true

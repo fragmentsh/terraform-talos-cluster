@@ -21,3 +21,15 @@ variable "cluster_name" {
   type        = string
   default     = "talos-demo-cluster"
 }
+
+variable "kubernetes_version" {
+  description = "The version of Kubernetes to deploy."
+  type        = string
+  default     = "v1.34.2"
+}
+
+variable "talos_version" {
+  description = "The version of Talos OS to use."
+  type        = string
+  default     = "v1.11.6"
+}

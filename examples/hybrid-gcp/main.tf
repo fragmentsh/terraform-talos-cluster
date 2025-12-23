@@ -8,6 +8,18 @@ provider "google-beta" {
   project = var.project_id
 }
 
+module "factory_gcp" {
+  source                = "../../modules/factory"
+  talos_platform        = "gcp"
+  talos_version         = var.talos_version
+  image_upload_platform = "gcp"
+  gcp = {
+    bucket_name   = "archi-gcp-images"
+    project_id    = var.project_id
+    create_bucket = false
+  }
+}
+
 module "network" {
   source  = "terraform-google-modules/network/google"
   version = "~> 13.0"
@@ -85,9 +97,15 @@ module "network_secondary" {
 module "control_plane" {
   source = "../../modules/control-plane/gcp"
 
-  project_id   = var.project_id
-  region       = var.region
-  cluster_name = var.cluster_name
+  project_id = var.project_id
+  region     = var.region
+
+  cluster_name       = var.cluster_name
+  kubernetes_version = var.kubernetes_version
+  talos_version      = var.talos_version
+  talos_image = {
+    name = module.factory_gcp.talos_image.gcp.id
+  }
 
   control_plane = {
     machine_type = "c3-standard-4"
@@ -99,9 +117,15 @@ module "control_plane" {
 module "node_pools" {
   source = "../../modules/node-pools/gcp"
 
-  project_id   = var.project_id
-  region       = var.region
-  cluster_name = var.cluster_name
+  project_id = var.project_id
+  region     = var.region
+
+  cluster_name       = var.cluster_name
+  kubernetes_version = var.kubernetes_version
+  talos_version      = var.talos_version
+  talos_image = {
+    name = module.factory_gcp.talos_image.gcp.id
+  }
 
   kubernetes_api_url         = module.control_plane.kubernetes_api_url
   talos_client_configuration = module.control_plane.talos_client_configuration
@@ -128,7 +152,7 @@ module "node_pools" {
 data "talos_client_configuration" "talos" {
   cluster_name         = var.cluster_name
   client_configuration = module.control_plane.talos_client_configuration
-  endpoints            = [module.control_plane.talos_api_ip]
+  endpoints            = module.control_plane.external_ips
   nodes = concat(
     module.control_plane.external_ips,
     module.node_pools.external_ips

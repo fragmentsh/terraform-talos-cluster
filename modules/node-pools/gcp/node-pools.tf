@@ -111,9 +111,9 @@ module "node_pool_instance_template" {
   project_id = var.project_id
 
   /* image */
-  source_image_project = coalesce(each.value.image.project, var.project_id)
-  source_image_family  = each.value.image.family
-  source_image         = each.value.image.name
+  source_image_project = coalesce(each.value.image.project, var.talos_image.project, var.project_id)
+  source_image_family  = coalesce(each.value.image.family, var.talos_image.family)
+  source_image         = coalesce(each.value.image.name, var.talos_image.name)
 
   /* disks */
   disk_size_gb = each.value.disk_size_gb

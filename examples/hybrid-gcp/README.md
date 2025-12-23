@@ -6,6 +6,7 @@
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.7 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | < 8.0.0 |
 | <a name="requirement_google-beta"></a> [google-beta](#requirement\_google-beta) | < 8.0.0 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 3 |
 | <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.10.0-beta.0 |
 
 ## Providers
@@ -18,6 +19,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_cilium"></a> [cilium](#module\_cilium) | /Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/talos | n/a |
 | <a name="module_control_plane"></a> [control\_plane](#module\_control\_plane) | ../../modules/control-plane/gcp | n/a |
 | <a name="module_factory_gcp"></a> [factory\_gcp](#module\_factory\_gcp) | ../../modules/factory | n/a |
 | <a name="module_network"></a> [network](#module\_network) | terraform-google-modules/network/google | ~> 13.0 |
@@ -28,7 +30,9 @@
 
 | Name | Type |
 |------|------|
+| [talos_cluster_kubeconfig.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0-beta.0/docs/resources/cluster_kubeconfig) | resource |
 | [talos_client_configuration.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0-beta.0/docs/data-sources/client_configuration) | data source |
+| [talos_cluster_health.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0-beta.0/docs/data-sources/cluster_health) | data source |
 
 ## Inputs
 

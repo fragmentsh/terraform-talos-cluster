@@ -13,5 +13,9 @@ terraform {
       source  = "siderolabs/talos"
       version = "0.10.0-beta.0"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 3"
+    }
   }
 }

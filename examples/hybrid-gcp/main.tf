@@ -8,6 +8,10 @@ provider "google-beta" {
   project = var.project_id
 }
 
+provider "helm" {
+  kubernetes = talos_cluster_kubeconfig.talos.kubernetes_client_configuration
+}
+
 module "factory_gcp" {
   source                = "../../modules/factory"
   talos_platform        = "gcp"
@@ -157,4 +161,30 @@ data "talos_client_configuration" "talos" {
     module.control_plane.external_ips,
     module.node_pools.external_ips
   )
+}
+
+data "talos_cluster_health" "talos" {
+  client_configuration = module.control_plane.talos_client_configuration
+  control_plane_nodes  = module.control_plane.external_ips
+  endpoints            = module.control_plane.external_ips
+}
+
+resource "talos_cluster_kubeconfig" "talos" {
+  depends_on = [
+    data.talos_cluster_health.talos
+  ]
+  client_configuration = module.control_plane.talos_client_configuration
+  node                 = module.control_plane.external_ips[0]
+}
+
+module "cilium" {
+  source = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/talos"
+
+  cluster_name = var.cluster_name
+
+  addons = {
+    cilium = {
+      enabled = true
+    }
+  }
 }

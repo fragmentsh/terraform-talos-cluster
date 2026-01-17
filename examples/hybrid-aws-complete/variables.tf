@@ -1,19 +1,13 @@
-variable "project_id" {
-  description = "The GCP project ID where resources will be created."
-  type        = string
-  default     = "sandbox-archi-0"
-}
-
 variable "region" {
-  description = "The GCP region where resources will be created."
+  description = "The AWS region where resources will be created."
   type        = string
-  default     = "europe-west1"
+  default     = "eu-west-1"
 }
 
 variable "region_secondary" {
-  description = "The secondary GCP region for additional resources."
+  description = "The secondary AWS region for additional resources."
   type        = string
-  default     = "europe-west4"
+  default     = "eu-west-3"
 }
 
 variable "cluster_name" {
@@ -25,7 +19,7 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   description = "The version of Kubernetes to deploy."
   type        = string
-  default     = "v1.34.2"
+  default     = "v1.35.0"
 }
 
 variable "talos_version" {

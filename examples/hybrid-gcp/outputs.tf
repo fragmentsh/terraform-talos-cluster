@@ -16,6 +16,10 @@ output "control_plane_api_url" {
   value = module.control_plane.kubernetes_api_url
 }
 
+output "node_pools" {
+  value = module.node_pools
+}
+
 output "talosconfig" {
   sensitive = true
   value     = data.talos_client_configuration.talos.talos_config

@@ -58,8 +58,8 @@ locals {
   # Default instance metadata settings
   default_instance_metadata = {
     http_tokens                 = "required"
-    http_put_response_hop_limit = 2
-    instance_metadata_tags      = "enabled"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "disabled"
   }
 
   # Default instance refresh settings
@@ -211,7 +211,13 @@ resource "aws_autoscaling_group" "node_pool" {
   tag {
     key                 = "kubernetes.io/cluster/${var.cluster_name}"
     value               = "owned"
-    propagate_at_launch = false
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "KubernetesCluster"
+    value               = var.cluster_name
+    propagate_at_launch = true
   }
 
   dynamic "tag" {

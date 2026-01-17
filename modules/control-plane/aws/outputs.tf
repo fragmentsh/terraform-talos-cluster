@@ -8,7 +8,6 @@ output "instances" {
   description = "Control plane instance information"
   value = {
     for k, v in local.control_plane_nodes : k => {
-      slot      = v.slot
       az        = v.az
       subnet_id = v.subnet_id
       asg_name  = aws_autoscaling_group.control_plane[k].name
@@ -29,12 +28,12 @@ output "instance_templates" {
 
 output "external_ips" {
   description = "External IP addresses of control plane instances (ephemeral)"
-  value       = [for k, v in data.aws_instance.control_plane : v.public_ip]
+  value       = data.aws_instances.control_plane.public_ips
 }
 
 output "private_ips" {
   description = "Private IP addresses of control plane instances"
-  value       = [for k, v in data.aws_instance.control_plane : v.private_ip]
+  value       = data.aws_instances.control_plane.private_ips
 }
 
 # -----------------------------------------------------------------------------
@@ -73,22 +72,6 @@ output "asgs" {
       name = aws_autoscaling_group.control_plane[k].name
       arn  = aws_autoscaling_group.control_plane[k].arn
       az   = v.az
-    }
-  }
-}
-
-# -----------------------------------------------------------------------------
-# Volume Outputs
-# -----------------------------------------------------------------------------
-
-output "ephemeral_volumes" {
-  description = "EBS volumes for ephemeral data (/var)"
-  value = {
-    for k, v in local.control_plane_nodes : k => {
-      id   = aws_ebs_volume.ephemeral[k].id
-      arn  = aws_ebs_volume.ephemeral[k].arn
-      az   = aws_ebs_volume.ephemeral[k].availability_zone
-      size = aws_ebs_volume.ephemeral[k].size
     }
   }
 }
@@ -133,18 +116,6 @@ output "talos_client_configuration" {
 #  value       = talos_cluster_kubeconfig.talos.kubeconfig_raw
 #  sensitive   = true
 #}
-
-# -----------------------------------------------------------------------------
-# Lambda Outputs
-# -----------------------------------------------------------------------------
-
-output "lambda_function" {
-  description = "Lambda function for resource attachment"
-  value = {
-    name = aws_lambda_function.attach_resources.function_name
-    arn  = aws_lambda_function.attach_resources.arn
-  }
-}
 
 # -----------------------------------------------------------------------------
 # AMI Output

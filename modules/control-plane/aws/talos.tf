@@ -35,6 +35,7 @@ data "talos_machine_configuration" "control_plane" {
             }
           }
           kubelet = {
+            registerWithFQDN = true
             extraArgs = {
               cloud-provider             = "external"
               rotate-server-certificates = true
@@ -79,24 +80,6 @@ data "talos_machine_configuration" "control_plane" {
             "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.4.1/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml"
           ]
         }
-      }),
-      yamlencode({
-        apiVersion = "v1alpha1"
-        kind       = "VolumeConfig"
-        name       = "EPHEMERAL"
-        provisioning = {
-          diskSelector = {
-            match = "disk.dev_path == \"/dev/nvme1n1\""
-          }
-          minSize = "${local.ephemeral_volume_config.size_gb}GB"
-          grow    = true
-        }
-      }),
-      yamlencode({
-        apiVersion = "v1alpha1"
-        kind       = "HostnameConfig"
-        auto       = "off"
-        hostname   = "${var.cluster_name}-control-plane-${each.key}"
       })
     ],
     each.value.config_patches

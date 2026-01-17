@@ -22,23 +22,6 @@ data "aws_instances" "control_plane" {
   }
 }
 
-data "aws_instance" "control_plane" {
-  for_each = local.control_plane_nodes
-
-  instance_tags = {
-    Cluster = var.cluster_name
-    Role    = "control-plane"
-    Slot    = each.key
-  }
-
-  filter {
-    name   = "instance-state-name"
-    values = ["running"]
-  }
-
-  depends_on = [aws_autoscaling_group.control_plane]
-}
-
 # -----------------------------------------------------------------------------
 # Availability Zone Validation
 # -----------------------------------------------------------------------------

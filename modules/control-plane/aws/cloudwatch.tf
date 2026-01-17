@@ -1,65 +1,6 @@
 # CloudWatch monitoring and alerting configuration
 
 # -----------------------------------------------------------------------------
-# Lambda Error Alarm
-# -----------------------------------------------------------------------------
-
-resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
-  count = local.cloudwatch_config.create_alarms ? 1 : 0
-
-  alarm_name          = "${var.cluster_name}-resource-attachment-errors"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Errors"
-  namespace           = "AWS/Lambda"
-  period              = 60
-  statistic           = "Sum"
-  threshold           = local.cloudwatch_config.lambda_error_threshold
-  alarm_description   = "Alert if resource attachment Lambda fails"
-
-  dimensions = {
-    FunctionName = aws_lambda_function.attach_resources.function_name
-  }
-
-  alarm_actions = local.cloudwatch_config.alarm_sns_topic_arn != null ? [local.cloudwatch_config.alarm_sns_topic_arn] : []
-  ok_actions    = local.cloudwatch_config.alarm_sns_topic_arn != null ? [local.cloudwatch_config.alarm_sns_topic_arn] : []
-
-  tags = merge(
-    local.resource_tags,
-    try(var.cloudwatch.tags, {})
-  )
-}
-
-# -----------------------------------------------------------------------------
-# Lambda Duration Alarm (approaching timeout)
-# -----------------------------------------------------------------------------
-
-resource "aws_cloudwatch_metric_alarm" "lambda_duration" {
-  count = local.cloudwatch_config.create_alarms ? 1 : 0
-
-  alarm_name          = "${var.cluster_name}-resource-attachment-duration"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Duration"
-  namespace           = "AWS/Lambda"
-  period              = 60
-  statistic           = "Maximum"
-  threshold           = local.cloudwatch_config.lambda_duration_threshold
-  alarm_description   = "Alert if resource attachment Lambda is approaching timeout"
-
-  dimensions = {
-    FunctionName = aws_lambda_function.attach_resources.function_name
-  }
-
-  alarm_actions = local.cloudwatch_config.alarm_sns_topic_arn != null ? [local.cloudwatch_config.alarm_sns_topic_arn] : []
-
-  tags = merge(
-    local.resource_tags,
-    try(var.cloudwatch.tags, {})
-  )
-}
-
-# -----------------------------------------------------------------------------
 # ASG Instance Launch Failure Alarm
 # -----------------------------------------------------------------------------
 

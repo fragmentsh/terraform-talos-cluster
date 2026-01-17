@@ -101,7 +101,7 @@ resource "aws_autoscaling_group" "control_plane" {
     version = aws_launch_template.control_plane[each.key].default_version
   }
 
-  # Health check configuration
+  # Health check configuration - EC2 type only terminates if instance is impaired
   health_check_type         = try(var.control_plane.health_check_type, "EC2")
   health_check_grace_period = try(var.control_plane.health_check_grace_period, 300)
   default_cooldown          = try(var.control_plane.default_cooldown, 300)
@@ -119,23 +119,18 @@ resource "aws_autoscaling_group" "control_plane" {
   instance_refresh {
     strategy = "Rolling"
     preferences {
-      min_healthy_percentage       = 0
-      max_healthy_percentage       = 100
-      instance_warmup              = try(var.control_plane.instance_warmup, 60)
-      scale_in_protected_instances = "Refresh"
+      min_healthy_percentage       = try(var.control_plane.instance_refresh.min_healthy_percentage, 0)
+      max_healthy_percentage       = try(var.control_plane.instance_refresh.max_healthy_percentage, 100)
+      instance_warmup              = try(var.control_plane.instance_refresh.instance_warmup, 60)
+      scale_in_protected_instances = try(var.control_plane.instance_refresh.scale_in_protected_instances, "Refresh")
     }
   }
 
-  initial_lifecycle_hook {
-    name                 = "attach-resources"
-    lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
-    default_result       = "ABANDON"
-    heartbeat_timeout    = local.lambda_config.timeout + 60
-    notification_metadata = jsonencode({
-      cluster_name = var.cluster_name
-      slot         = each.value.slot
-    })
+  instance_maintenance_policy {
+    min_healthy_percentage = try(var.control_plane.instance_maintenance_policy.min_healthy_percentage, 0)
+    max_healthy_percentage = try(var.control_plane.instance_maintenance_policy.max_healthy_percentage, 100)
   }
+
 
   dynamic "tag" {
     for_each = merge(
@@ -144,7 +139,6 @@ resource "aws_autoscaling_group" "control_plane" {
       each.value.tags,
       {
         Name = "${var.cluster_name}-control-plane-${each.key}"
-        Slot = tostring(each.value.slot)
       }
     )
 
@@ -158,37 +152,17 @@ resource "aws_autoscaling_group" "control_plane" {
   tag {
     key                 = "kubernetes.io/cluster/${var.cluster_name}"
     value               = "owned"
-    propagate_at_launch = false
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "KubernetesCluster"
+    value               = var.cluster_name
+    propagate_at_launch = true
   }
 
   lifecycle {
     create_before_destroy = true
     ignore_changes        = [desired_capacity]
   }
-
-  depends_on = [
-    aws_ebs_volume.ephemeral,
-    aws_lambda_function.attach_resources
-  ]
-}
-
-# -----------------------------------------------------------------------------
-# ASG Lifecycle Hooks (one per control plane ASG)
-# Separate resource to ensure hook persists for all instance launches
-# (initial_lifecycle_hook only guarantees hook exists at ASG creation)
-# -----------------------------------------------------------------------------
-
-resource "aws_autoscaling_lifecycle_hook" "attach_resources" {
-  for_each = local.control_plane_nodes
-
-  name                   = "attach-resources"
-  autoscaling_group_name = aws_autoscaling_group.control_plane[each.key].name
-  lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
-  default_result         = "ABANDON"
-  heartbeat_timeout      = local.lambda_config.timeout + 60
-
-  notification_metadata = jsonencode({
-    cluster_name = var.cluster_name
-    slot         = each.value.slot
-  })
 }

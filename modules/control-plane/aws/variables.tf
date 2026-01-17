@@ -85,9 +85,9 @@ variable "control_plane" {
       tags                                   = optional(map(string)) # Additional tags for this node
     }))
 
-    # Root volume configuration (global) - only needs Talos OS
+    # Root volume configuration (global)
     root_volume = optional(object({
-      size_gb               = optional(number, 20)
+      size_gb               = optional(number, 50)
       type                  = optional(string, "gp3")
       iops                  = optional(number, 3000)
       throughput            = optional(number, 125)
@@ -96,22 +96,11 @@ variable "control_plane" {
       delete_on_termination = optional(bool, true)
     }), {})
 
-    # Ephemeral volume configuration (global) - stores entire /var (EPHEMERAL volume)
-    # Includes etcd data, container images, logs, and other ephemeral state
-    ephemeral_volume = optional(object({
-      size_gb    = optional(number, 50)
-      type       = optional(string, "gp3")
-      iops       = optional(number, 3000)
-      throughput = optional(number, 125)
-      encrypted  = optional(bool, true)
-      kms_key_id = optional(string)
-    }), {})
-
     # Instance metadata configuration (IMDSv2)
     instance_metadata = optional(object({
       http_tokens                 = optional(string, "required")
-      http_put_response_hop_limit = optional(number, 2)
-      instance_metadata_tags      = optional(string, "enabled")
+      http_put_response_hop_limit = optional(number, 1)
+      instance_metadata_tags      = optional(string, "disabled")
     }), {})
 
     # ASG configuration (global)
@@ -119,7 +108,20 @@ variable "control_plane" {
     default_cooldown          = optional(number, 300)
     health_check_grace_period = optional(number, 300)
     health_check_type         = optional(string, "EC2")
-    instance_warmup           = optional(number, 60)
+
+    # Instance refresh configuration (for rolling updates)
+    instance_refresh = optional(object({
+      min_healthy_percentage       = optional(number, 0)
+      max_healthy_percentage       = optional(number, 100)
+      instance_warmup              = optional(number, 60)
+      scale_in_protected_instances = optional(string, "Refresh")
+    }), {})
+
+    # Instance maintenance policy (for AWS-initiated maintenance)
+    instance_maintenance_policy = optional(object({
+      min_healthy_percentage = optional(number, 0)
+      max_healthy_percentage = optional(number, 100)
+    }), {})
 
     # Instance protection
     protect_from_scale_in = optional(bool, true)
@@ -163,7 +165,7 @@ variable "load_balancer" {
       enabled             = optional(bool, true)
       interval            = optional(number, 10)
       healthy_threshold   = optional(number, 2)
-      unhealthy_threshold = optional(number, 2)
+      unhealthy_threshold = optional(number, 10)
       timeout             = optional(number, 5)
       port                = optional(number, 6443)
       protocol            = optional(string, "TCP")
@@ -176,26 +178,9 @@ variable "load_balancer" {
         enabled             = optional(bool, true)
         interval            = optional(number, 10)
         healthy_threshold   = optional(number, 2)
-        unhealthy_threshold = optional(number, 2)
+        unhealthy_threshold = optional(number, 10)
       }), {})
     }), {})
-
-    tags = optional(map(string), {})
-  })
-  default = {}
-}
-
-variable "lambda" {
-  description = "Lambda function configuration for volume attachment."
-  type = object({
-    timeout       = optional(number, 300)
-    memory_size   = optional(number, 256)
-    runtime       = optional(string, "python3.12")
-    log_retention = optional(number, 7)
-
-    # Retry configuration
-    max_retry_attempts = optional(number, 5)
-    retry_delay_base   = optional(number, 2)
 
     tags = optional(map(string), {})
   })
@@ -205,16 +190,9 @@ variable "lambda" {
 variable "cloudwatch" {
   description = "CloudWatch monitoring and alerting configuration."
   type = object({
-    create_alarms = optional(bool, true)
-
-    # SNS topic for alarm notifications
+    create_alarms       = optional(bool, true)
     alarm_sns_topic_arn = optional(string)
-
-    # Alarm thresholds
-    lambda_error_threshold    = optional(number, 0)
-    lambda_duration_threshold = optional(number, 240000)
-
-    tags = optional(map(string), {})
+    tags                = optional(map(string), {})
   })
   default = {}
 }

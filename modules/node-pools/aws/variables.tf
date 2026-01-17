@@ -105,8 +105,8 @@ variable "node_pools" {
     # Instance metadata (IMDSv2)
     instance_metadata = optional(object({
       http_tokens                 = optional(string, "required")
-      http_put_response_hop_limit = optional(number, 2)
-      instance_metadata_tags      = optional(string, "enabled")
+      http_put_response_hop_limit = optional(number, 1)
+      instance_metadata_tags      = optional(string, "disabled")
     }), {})
 
     # ASG configuration

@@ -156,8 +156,14 @@ module "control_plane" {
       "0" = {
         update_launch_template_default_version = true
       }
-      "1" = {}
-      "2" = {}
+      "1" = {
+        update_launch_template_default_version = true
+
+      }
+      "2" = {
+        update_launch_template_default_version = true
+
+      }
     }
 
     root_volume = {
@@ -165,12 +171,6 @@ module "control_plane" {
       type    = "gp3"
     }
 
-    ephemeral_volume = {
-      size_gb    = 50
-      type       = "gp3"
-      iops       = 3000
-      throughput = 125
-    }
   }
 
   load_balancer = {

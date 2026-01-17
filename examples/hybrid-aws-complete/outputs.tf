@@ -55,11 +55,6 @@ output "load_balancer" {
   value       = module.control_plane.load_balancer
 }
 
-output "ephemeral_volumes" {
-  description = "Ephemeral EBS volumes (/var)"
-  value       = module.control_plane.ephemeral_volumes
-}
-
 output "node_pools_primary" {
   description = "Primary region node pool information"
   value = {

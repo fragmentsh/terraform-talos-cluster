@@ -61,6 +61,11 @@ output "load_balancer" {
   }
 }
 
+output "irsa_private_key" {
+  value     = tls_private_key.irsa_oidc[0].private_key_pem
+  sensitive = true
+}
+
 # -----------------------------------------------------------------------------
 # ASG Outputs
 # -----------------------------------------------------------------------------

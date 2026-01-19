@@ -16,6 +16,21 @@ provider "helm" {
   }
 }
 
+provider "kubernetes" {
+  host                   = talos_cluster_kubeconfig.talos.kubernetes_client_configuration.host
+  cluster_ca_certificate = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.ca_certificate)
+  client_certificate     = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.client_certificate)
+  client_key             = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.client_key)
+}
+
+provider "kubectl" {
+  host                   = talos_cluster_kubeconfig.talos.kubernetes_client_configuration.host
+  cluster_ca_certificate = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.ca_certificate)
+  client_certificate     = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.client_certificate)
+  client_key             = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.client_key)
+  load_config_file       = false
+}
+
 # -----------------------------------------------------------------------------
 # Talos Cloud Images - Fetch official Talos AMI IDs
 # -----------------------------------------------------------------------------
@@ -149,20 +164,22 @@ module "control_plane" {
   talos_version      = var.talos_version
   talos_image_id     = module.talos_ami.ami_id
 
+  irsa = {
+    enabled = true
+  }
+
   control_plane = {
     instance_type = "m6i.large"
 
     nodes = {
       "0" = {
-        update_launch_template_default_version = true
+        update_launch_template_default_version = false
       }
       "1" = {
-        update_launch_template_default_version = true
-
+        update_launch_template_default_version = false
       }
       "2" = {
-        update_launch_template_default_version = true
-
+        update_launch_template_default_version = false
       }
     }
 
@@ -260,6 +277,25 @@ module "aws-cloud-controller-manager" {
       image:
         tag: ${var.kubernetes_version}
       EXTRA_VALUES
+    }
+  }
+}
+
+module "cert-manager" {
+  source = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/aws"
+
+  cluster_name = var.cluster_name
+
+  aws = {
+    region = var.region
+  }
+
+  addons = {
+    cert-manager = {
+      enabled = true
+      eks_pod_identity = {
+        enabled = false
+      }
     }
   }
 }

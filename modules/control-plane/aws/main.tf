@@ -22,6 +22,27 @@ data "aws_instances" "control_plane" {
   }
 }
 
+data "aws_instances" "control_plane_by_node" {
+  for_each   = local.control_plane_nodes
+  depends_on = [aws_autoscaling_group.control_plane]
+
+  filter {
+    name   = "tag:Name"
+    values = ["${var.cluster_name}-control-plane-${each.key}"]
+  }
+
+  filter {
+    name   = "instance-state-name"
+    values = ["running", "pending"]
+  }
+}
+
+data "aws_instance" "control_plane" {
+  for_each    = local.control_plane_nodes
+  depends_on  = [aws_autoscaling_group.control_plane]
+  instance_id = try(data.aws_instances.control_plane_by_node[each.key].ids[0], null)
+}
+
 # -----------------------------------------------------------------------------
 # Availability Zone Validation
 # -----------------------------------------------------------------------------

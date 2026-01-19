@@ -72,16 +72,25 @@ data "talos_machine_configuration" "control_plane" {
             disabled = true
           }
           extraManifests = [
-            "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.4.1/config/crd/standard/gateway.networking.k8s.io_backendtlspolicies.yaml",
-            "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.4.1/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml",
-            "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.4.1/config/crd/standard/gateway.networking.k8s.io_gateways.yaml",
-            "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.4.1/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml",
-            "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.4.1/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml",
-            "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.4.1/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml"
+            "https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml"
           ]
         }
       })
     ],
+    var.irsa.enabled ? [
+      yamlencode({
+        cluster = {
+          apiServer = {
+            extraArgs = {
+              service-account-issuer = "https://${module.irsa_s3_bucket[0].s3_bucket_bucket_domain_name}"
+            }
+          }
+          serviceAccount = {
+            key = base64encode(tls_private_key.irsa_oidc[0].private_key_pem)
+          }
+        }
+      })
+    ] : [],
     each.value.config_patches
   )
 }
@@ -117,18 +126,12 @@ resource "talos_cluster_kubeconfig" "talos" {
   node                 = aws_lb.control_plane.dns_name
 }
 
-# -----------------------------------------------------------------------------
-# Talos Machine Configuration Apply
-# -----------------------------------------------------------------------------
+resource "talos_machine_configuration_apply" "control_plane" {
+  depends_on = [talos_machine_bootstrap.talos]
+  for_each   = local.control_plane_nodes
 
-#resource "talos_machine_configuration_apply" "control_plane" {
-#  depends_on = [
-#    talos_machine_bootstrap.talos
-#  ]
-#
-#  for_each                    = local.control_plane_nodes
-#  endpoint                    = aws_lb.control_plane.dns_name
-#  client_configuration        = talos_machine_secrets.talos.client_configuration
-#  machine_configuration_input = data.talos_machine_configuration.control_plane[each.key].machine_configuration
-#  node                        = data.aws_instance.control_plane[each.key].private_ip
-#}
+  client_configuration        = talos_machine_secrets.talos.client_configuration
+  machine_configuration_input = data.talos_machine_configuration.control_plane[each.key].machine_configuration
+  node                        = data.aws_instance.control_plane[each.key].public_ip
+  endpoint                    = aws_lb.control_plane.dns_name
+}

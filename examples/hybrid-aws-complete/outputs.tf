@@ -70,3 +70,8 @@ output "node_pools_secondary" {
     private_ips  = module.node_pools_secondary.private_ips
   }
 }
+
+output "irsa_private_key" {
+  value     = base64encode(module.control_plane.irsa_private_key)
+  sensitive = true
+}

@@ -8,6 +8,16 @@ variable "cluster_name" {
   }
 }
 
+variable "irsa" {
+  description = "Configuration for IAM Roles for Service Accounts (IRSA)."
+  type = object({
+    enabled = optional(bool, true)
+  })
+  default = {
+    enabled = true
+  }
+}
+
 variable "region" {
   description = "The AWS region where resources will be created."
   type        = string

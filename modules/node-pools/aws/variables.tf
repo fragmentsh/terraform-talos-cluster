@@ -8,11 +8,6 @@ variable "cluster_name" {
   }
 }
 
-variable "region" {
-  description = "The AWS region where resources will be created."
-  type        = string
-}
-
 variable "vpc_id" {
   description = "ID of the VPC where node pools will be deployed."
   type        = string
@@ -26,7 +21,7 @@ variable "vpc_id" {
 variable "talos_version" {
   description = "The version of Talos OS to use for the node pool instances."
   type        = string
-  default     = "v1.11.6"
+  default     = "v1.12.2"
 
   validation {
     condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$", var.talos_version))
@@ -42,7 +37,7 @@ variable "talos_image_id" {
 variable "kubernetes_version" {
   description = "The version of Kubernetes to deploy on the node pools."
   type        = string
-  default     = "v1.34.2"
+  default     = "v1.35.0"
 
   validation {
     condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$", var.kubernetes_version))

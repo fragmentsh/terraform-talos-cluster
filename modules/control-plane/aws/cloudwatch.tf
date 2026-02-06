@@ -1,28 +1,21 @@
-# CloudWatch monitoring and alerting configuration
+resource "aws_cloudwatch_metric_alarm" "instance_status_check" {
+  for_each = var.cloudwatch.create_alarms ? local.control_plane_nodes : {}
 
-# -----------------------------------------------------------------------------
-# ASG Instance Launch Failure Alarm
-# -----------------------------------------------------------------------------
-
-resource "aws_cloudwatch_metric_alarm" "asg_launch_failure" {
-  for_each = local.cloudwatch_config.create_alarms ? local.control_plane_nodes : {}
-
-  alarm_name          = "${var.cluster_name}-${each.key}-launch-failure"
+  alarm_name          = "${var.cluster_name}-${each.key}-status-check"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "GroupTotalInstances"
-  namespace           = "AWS/AutoScaling"
-  period              = 300
-  statistic           = "Minimum"
-  threshold           = 0 # Alert if instances drop below 1
-  alarm_description   = "Alert if control plane node ${each.key} has no running instances"
-  treat_missing_data  = "breaching"
+  evaluation_periods  = 2
+  metric_name         = "StatusCheckFailed"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = 0
+  alarm_description   = "Alert if control plane node ${each.key} fails status checks"
 
   dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.control_plane[each.key].name
+    InstanceId = aws_instance.control_plane[each.key].id
   }
 
-  alarm_actions = local.cloudwatch_config.alarm_sns_topic_arn != null ? [local.cloudwatch_config.alarm_sns_topic_arn] : []
+  alarm_actions = var.cloudwatch.alarm_sns_topic_arn != null ? [var.cloudwatch.alarm_sns_topic_arn] : []
 
   tags = merge(
     local.resource_tags,
@@ -30,12 +23,8 @@ resource "aws_cloudwatch_metric_alarm" "asg_launch_failure" {
   )
 }
 
-# -----------------------------------------------------------------------------
-# NLB Health Check Alarm
-# -----------------------------------------------------------------------------
-
 resource "aws_cloudwatch_metric_alarm" "nlb_unhealthy_hosts" {
-  count = local.cloudwatch_config.create_alarms ? 1 : 0
+  count = var.cloudwatch.create_alarms ? 1 : 0
 
   alarm_name          = "${var.cluster_name}-unhealthy-control-plane"
   comparison_operator = "GreaterThanThreshold"
@@ -52,7 +41,7 @@ resource "aws_cloudwatch_metric_alarm" "nlb_unhealthy_hosts" {
     LoadBalancer = aws_lb.control_plane.arn_suffix
   }
 
-  alarm_actions = local.cloudwatch_config.alarm_sns_topic_arn != null ? [local.cloudwatch_config.alarm_sns_topic_arn] : []
+  alarm_actions = var.cloudwatch.alarm_sns_topic_arn != null ? [var.cloudwatch.alarm_sns_topic_arn] : []
 
   tags = merge(
     local.resource_tags,

@@ -1,9 +1,3 @@
-# IAM roles and policies for control plane components
-
-# -----------------------------------------------------------------------------
-# IAM Role for Control Plane EC2 Instances
-# -----------------------------------------------------------------------------
-
 resource "aws_iam_role" "control_plane" {
   name = "${var.cluster_name}-control-plane"
 
@@ -138,5 +132,3 @@ resource "aws_iam_role_policy" "control_plane" {
     ]
   })
 }
-
-

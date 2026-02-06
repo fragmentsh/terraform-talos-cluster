@@ -1,30 +1,20 @@
-# Network Load Balancer for Kubernetes API endpoint
-
-# -----------------------------------------------------------------------------
-# Network Load Balancer
-# -----------------------------------------------------------------------------
-
 resource "aws_lb" "control_plane" {
-  name               = "${var.cluster_name}-k8s-api"
-  internal           = local.nlb_config.internal
+  name               = "${var.cluster_name}-control-plane"
+  internal           = var.nlb.internal
   load_balancer_type = "network"
-  subnets            = [for az, subnet_id in var.subnet_ids : subnet_id]
+  subnets            = local.nlb_subnet_ids
 
-  enable_cross_zone_load_balancing = local.nlb_config.enable_cross_zone_load_balancing
-  enable_deletion_protection       = local.nlb_config.enable_deletion_protection
+  enable_cross_zone_load_balancing = var.nlb.enable_cross_zone_load_balancing
+  enable_deletion_protection       = var.nlb.enable_deletion_protection
 
   tags = merge(
     local.resource_tags,
-    try(var.load_balancer.tags, {}),
+    try(var.nlb.tags, {}),
     {
-      Name = "${var.cluster_name}-k8s-api"
+      Name = "${var.cluster_name}-control-plane"
     }
   )
 }
-
-# -----------------------------------------------------------------------------
-# Target Group for Kubernetes API (6443)
-# -----------------------------------------------------------------------------
 
 resource "aws_lb_target_group" "k8s_api" {
   name     = "${var.cluster_name}-k8s-api"
@@ -32,15 +22,15 @@ resource "aws_lb_target_group" "k8s_api" {
   protocol = "TCP"
   vpc_id   = var.vpc_id
 
-  deregistration_delay = local.nlb_config.deregistration_delay
+  deregistration_delay = var.nlb.k8s_api.deregistration_delay
 
   health_check {
-    enabled             = local.nlb_config.health_check.enabled
-    protocol            = local.nlb_config.health_check.protocol
-    port                = tostring(local.nlb_config.health_check.port)
-    interval            = local.nlb_config.health_check.interval
-    healthy_threshold   = local.nlb_config.health_check.healthy_threshold
-    unhealthy_threshold = local.nlb_config.health_check.unhealthy_threshold
+    enabled             = var.nlb.k8s_api.health_check.enabled
+    protocol            = var.nlb.k8s_api.health_check.protocol
+    port                = var.nlb.k8s_api.health_check.port
+    interval            = var.nlb.k8s_api.health_check.interval
+    healthy_threshold   = var.nlb.k8s_api.health_check.healthy_threshold
+    unhealthy_threshold = var.nlb.k8s_api.health_check.unhealthy_threshold
   }
 
   tags = merge(
@@ -54,10 +44,6 @@ resource "aws_lb_target_group" "k8s_api" {
     create_before_destroy = true
   }
 }
-
-# -----------------------------------------------------------------------------
-# Listener for Kubernetes API (6443)
-# -----------------------------------------------------------------------------
 
 resource "aws_lb_listener" "k8s_api" {
   load_balancer_arn = aws_lb.control_plane.arn
@@ -72,25 +58,21 @@ resource "aws_lb_listener" "k8s_api" {
   tags = local.resource_tags
 }
 
-# -----------------------------------------------------------------------------
-# Target Group for Talos API (50000)
-# -----------------------------------------------------------------------------
-
 resource "aws_lb_target_group" "talos_api" {
   name     = "${var.cluster_name}-talos-api"
   port     = 50000
   protocol = "TCP"
   vpc_id   = var.vpc_id
 
-  deregistration_delay = local.nlb_config.talos_api.deregistration_delay
+  deregistration_delay = var.nlb.talos_api.deregistration_delay
 
   health_check {
-    enabled             = local.nlb_config.talos_api.health_check.enabled
+    enabled             = var.nlb.talos_api.health_check.enabled
     protocol            = "TCP"
     port                = "50000"
-    interval            = local.nlb_config.talos_api.health_check.interval
-    healthy_threshold   = local.nlb_config.talos_api.health_check.healthy_threshold
-    unhealthy_threshold = local.nlb_config.talos_api.health_check.unhealthy_threshold
+    interval            = var.nlb.talos_api.health_check.interval
+    healthy_threshold   = var.nlb.talos_api.health_check.healthy_threshold
+    unhealthy_threshold = var.nlb.talos_api.health_check.unhealthy_threshold
   }
 
   tags = merge(
@@ -104,10 +86,6 @@ resource "aws_lb_target_group" "talos_api" {
     create_before_destroy = true
   }
 }
-
-# -----------------------------------------------------------------------------
-# Listener for Talos API (50000)
-# -----------------------------------------------------------------------------
 
 resource "aws_lb_listener" "talos_api" {
   load_balancer_arn = aws_lb.control_plane.arn

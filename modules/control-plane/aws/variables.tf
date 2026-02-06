@@ -18,21 +18,6 @@ variable "irsa" {
   }
 }
 
-variable "region" {
-  description = "The AWS region where resources will be created."
-  type        = string
-}
-
-variable "availability_zones" {
-  description = "List of availability zones for control plane distribution. Nodes will be distributed across these zones using round-robin."
-  type        = list(string)
-
-  validation {
-    condition     = length(var.availability_zones) >= 1 && length(var.availability_zones) <= 6
-    error_message = "Must provide between 1 and 6 availability zones"
-  }
-}
-
 variable "vpc_id" {
   description = "ID of the VPC where control plane will be deployed."
   type        = string
@@ -43,35 +28,14 @@ variable "vpc_id" {
   }
 }
 
-variable "subnet_ids" {
-  description = "Map of availability zone to subnet ID for control plane placement."
-  type        = map(string)
-
-  validation {
-    condition     = length(var.subnet_ids) >= 1
-    error_message = "Must provide at least one subnet"
-  }
-}
-
 variable "talos_version" {
   description = "The version of Talos OS to use for the control plane instances."
   type        = string
-  default     = "v1.11.6"
+  default     = "v1.12.2"
 
   validation {
     condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$", var.talos_version))
     error_message = "Talos version must be in format vX.Y.Z"
-  }
-}
-
-variable "kubernetes_version" {
-  description = "The version of Kubernetes to deploy on the Talos control plane."
-  type        = string
-  default     = "v1.34.2"
-
-  validation {
-    condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$", var.kubernetes_version))
-    error_message = "Kubernetes version must be in format vX.Y.Z"
   }
 }
 
@@ -80,24 +44,27 @@ variable "talos_image_id" {
   type        = string
 }
 
+variable "kubernetes_version" {
+  description = "The version of Kubernetes to deploy on the Talos control plane."
+  type        = string
+  default     = "v1.35.0"
+
+  validation {
+    condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$", var.kubernetes_version))
+    error_message = "Kubernetes version must be in format vX.Y.Z"
+  }
+}
+
 variable "control_plane" {
   description = "Configuration for the control plane instances."
   type = object({
     # Default instance type (can be overridden per node)
     instance_type = string
-
-    # Per-node configuration (keys must be numeric strings: "0", "1", "2", etc.)
-    nodes = map(object({
-      availability_zone                      = optional(string)      # Override AZ for this node
-      instance_type                          = optional(string)      # Override instance type for this node
-      update_launch_template_default_version = optional(bool, false) # When true, ASG uses $Latest version triggering instance refresh
-      config_patches                         = optional(list(any))   # Additional Talos config patches for this node
-      tags                                   = optional(map(string)) # Additional tags for this node
-    }))
+    subnet_ids    = list(string)
 
     # Root volume configuration (global)
     root_volume = optional(object({
-      size_gb               = optional(number, 50)
+      size_gb               = optional(number, 5)
       type                  = optional(string, "gp3")
       iops                  = optional(number, 3000)
       throughput            = optional(number, 125)
@@ -106,63 +73,74 @@ variable "control_plane" {
       delete_on_termination = optional(bool, true)
     }), {})
 
+    # Ephemeral volume configuration (persistent EBS for Talos EPHEMERAL partition - /var)
+    ephemeral_volume = optional(object({
+      enabled    = optional(bool, true)
+      size_gb    = optional(number, 50)
+      type       = optional(string, "gp3")
+      iops       = optional(number, 3000)
+      throughput = optional(number, 125)
+      encrypted  = optional(bool, true)
+      kms_key_id = optional(string)
+    }), {})
+
     # Instance metadata configuration (IMDSv2)
-    instance_metadata = optional(object({
+    instance_metadata_options = optional(object({
       http_tokens                 = optional(string, "required")
       http_put_response_hop_limit = optional(number, 1)
       instance_metadata_tags      = optional(string, "disabled")
     }), {})
-
-    # ASG configuration (global)
-    wait_for_capacity_timeout = optional(string, "10m")
-    default_cooldown          = optional(number, 300)
-    health_check_grace_period = optional(number, 300)
-    health_check_type         = optional(string, "EC2")
-
-    # Instance refresh configuration (for rolling updates)
-    instance_refresh = optional(object({
-      min_healthy_percentage       = optional(number, 0)
-      max_healthy_percentage       = optional(number, 100)
-      instance_warmup              = optional(number, 60)
-      scale_in_protected_instances = optional(string, "Refresh")
-    }), {})
-
-    # Instance maintenance policy (for AWS-initiated maintenance)
-    instance_maintenance_policy = optional(object({
-      min_healthy_percentage = optional(number, 0)
-      max_healthy_percentage = optional(number, 100)
-    }), {})
-
-    # Instance protection
-    protect_from_scale_in = optional(bool, true)
-
-    # Network configuration
-    associate_public_ip = optional(bool, true)
 
     # Tags (global)
     tags = optional(map(string), {})
 
     # Talos configuration patches (global, applied to all nodes)
     config_patches = optional(list(any), [])
+
+    # Per-node configuration - map with explicit node keys
+    # Each node MUST specify a private_ip for stable etcd identity
+    nodes = map(object({
+      subnet_id      = optional(string)     # Override AZ for this node (defaults to round-robin)
+      private_ip     = optional(string)     # Fixed private IP for ENI (required for stable etcd identity)
+      instance_type  = optional(string)     # Override instance type for this node
+      enable_eip     = optional(bool, true) # Whether to attach an Elastic IP
+      config_patches = optional(list(any))  # Additional Talos config patches for this node
+      tags           = optional(map(string))
+      root_volume = optional(object({
+        size_gb               = optional(number)
+        type                  = optional(string)
+        iops                  = optional(number)
+        throughput            = optional(number)
+        encrypted             = optional(bool)
+        kms_key_id            = optional(string)
+        delete_on_termination = optional(bool)
+      }), {})
+      ephemeral_volume = optional(object({
+        enabled               = optional(bool)
+        size_gb               = optional(number)
+        type                  = optional(string)
+        iops                  = optional(number)
+        throughput            = optional(number)
+        encrypted             = optional(bool)
+        kms_key_id            = optional(string)
+        delete_on_termination = optional(bool)
+      }), {})
+      instance_metadata_options = optional(object({
+        http_tokens                 = optional(string)
+        http_put_response_hop_limit = optional(number)
+        instance_metadata_tags      = optional(string)
+      }), {})
+    }))
+
   })
 
   validation {
     condition     = length(var.control_plane.nodes) >= 1 && length(var.control_plane.nodes) % 2 == 1
     error_message = "Control plane must have an odd number of nodes (1, 3, 5, 7, etc.) for etcd quorum"
   }
-
-  validation {
-    condition     = alltrue([for k, v in var.control_plane.nodes : can(tonumber(k))])
-    error_message = "Node keys must be numeric strings (e.g., \"0\", \"1\", \"2\")"
-  }
-
-  validation {
-    condition     = var.control_plane.instance_type != ""
-    error_message = "Default instance type cannot be empty"
-  }
 }
 
-variable "load_balancer" {
+variable "nlb" {
   description = "Network Load Balancer configuration for Kubernetes API and Talos API."
   type = object({
     internal                         = optional(bool, false)
@@ -170,15 +148,17 @@ variable "load_balancer" {
     enable_deletion_protection       = optional(bool, true)
 
     # Kubernetes API target group configuration
-    deregistration_delay = optional(number, 30)
-    health_check = optional(object({
-      enabled             = optional(bool, true)
-      interval            = optional(number, 10)
-      healthy_threshold   = optional(number, 2)
-      unhealthy_threshold = optional(number, 10)
-      timeout             = optional(number, 5)
-      port                = optional(number, 6443)
-      protocol            = optional(string, "TCP")
+    k8s_api = optional(object({
+      deregistration_delay = optional(number, 10)
+      health_check = optional(object({
+        enabled             = optional(bool, true)
+        interval            = optional(number, 10)
+        healthy_threshold   = optional(number, 2)
+        unhealthy_threshold = optional(number, 10)
+        timeout             = optional(number, 5)
+        port                = optional(number, 6443)
+        protocol            = optional(string, "TCP")
+      }), {})
     }), {})
 
     # Talos API target group configuration
@@ -189,12 +169,14 @@ variable "load_balancer" {
         interval            = optional(number, 10)
         healthy_threshold   = optional(number, 2)
         unhealthy_threshold = optional(number, 10)
+        timeout             = optional(number, 5)
       }), {})
     }), {})
 
     tags = optional(map(string), {})
   })
-  default = {}
+  default  = {}
+  nullable = false
 }
 
 variable "cloudwatch" {
@@ -229,7 +211,10 @@ variable "security_group" {
     })), [])
 
     # Allowed CIDR blocks for API access
-    api_ingress_cidr_blocks = optional(list(string), ["0.0.0.0/0"])
+    k8s_api_ingress_cidr_blocks        = optional(list(string), ["0.0.0.0/0"])
+    talos_api_ingress_cidr_blocks      = optional(list(string), ["0.0.0.0/0"])
+    talos_trustd_ingress_cidr_blocks   = optional(list(string), ["0.0.0.0/0"])
+    talos_kubespan_ingress_cidr_blocks = optional(list(string), ["0.0.0.0/0"])
 
     tags = optional(map(string), {})
   })

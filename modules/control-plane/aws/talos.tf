@@ -1,16 +1,6 @@
-# Talos machine configuration and cluster bootstrap
-
-# -----------------------------------------------------------------------------
-# Talos Machine Secrets
-# -----------------------------------------------------------------------------
-
 resource "talos_machine_secrets" "talos" {
   talos_version = var.talos_version
 }
-
-# -----------------------------------------------------------------------------
-# Talos Machine Configuration for Control Plane
-# -----------------------------------------------------------------------------
 
 data "talos_machine_configuration" "control_plane" {
   for_each = local.control_plane_nodes
@@ -77,6 +67,18 @@ data "talos_machine_configuration" "control_plane" {
         }
       })
     ],
+    each.value.ephemeral_volume.enabled ? [
+      yamlencode({
+        apiVersion = "v1alpha1"
+        kind       = "VolumeConfig"
+        name       = "EPHEMERAL"
+        provisioning = {
+          diskSelector = {
+            match = "disk.transport == 'nvme' && !system_disk"
+          }
+        }
+      })
+    ] : [],
     var.irsa.enabled ? [
       yamlencode({
         cluster = {
@@ -95,14 +97,11 @@ data "talos_machine_configuration" "control_plane" {
   )
 }
 
-# -----------------------------------------------------------------------------
-# Talos Machine Bootstrap
-# -----------------------------------------------------------------------------
-
 resource "talos_machine_bootstrap" "talos" {
   depends_on = [
-    aws_autoscaling_group.control_plane,
-    aws_lb.control_plane
+    aws_instance.control_plane,
+    aws_lb.control_plane,
+    aws_volume_attachment.ephemeral
   ]
 
   node                 = aws_lb.control_plane.dns_name
@@ -112,10 +111,6 @@ resource "talos_machine_bootstrap" "talos" {
     ignore_changes = [node]
   }
 }
-
-# -----------------------------------------------------------------------------
-# Talos Cluster Kubeconfig
-# -----------------------------------------------------------------------------
 
 resource "talos_cluster_kubeconfig" "talos" {
   depends_on = [
@@ -132,6 +127,6 @@ resource "talos_machine_configuration_apply" "control_plane" {
 
   client_configuration        = talos_machine_secrets.talos.client_configuration
   machine_configuration_input = data.talos_machine_configuration.control_plane[each.key].machine_configuration
-  node                        = data.aws_instance.control_plane[each.key].public_ip
-  endpoint                    = aws_lb.control_plane.dns_name
+  node                        = local.control_plane_nodes[each.key].enable_eip ? aws_eip.control_plane[each.key].public_ip : aws_instance.control_plane[each.key].private_ip
+  #endpoint                    = aws_lb.control_plane.dns_name
 }

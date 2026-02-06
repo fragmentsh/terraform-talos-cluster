@@ -169,6 +169,67 @@ module "cilium" {
   }
 }
 
+moved {
+  from = module.cilium.module.helm_releases["cilium"].helm_release.this[0]
+  to   = module.cilium.helm_release.this["cilium"]
+}
+
+moved {
+  from = module.aws-cloud-controller-manager.module.helm_releases["aws-cloud-controller-manager"].helm_release.this[0]
+  to   = module.aws-cloud-controller-manager.helm_release.this["aws-cloud-controller-manager"]
+}
+
+moved {
+  from = module.cert_manager.module.helm_releases["cert-manager"].helm_release.this[0]
+  to   = module.cert_manager.helm_release.this["cert-manager"]
+}
+
+moved {
+  from = module.amazon-eks-pod-identity-webhook.module.helm_releases["amazon-eks-pod-identity-webhook"].helm_release.this[0]
+  to   = module.amazon-eks-pod-identity-webhook.helm_release.this["amazon-eks-pod-identity-webhook"]
+}
+
+moved {
+  from = module.aws_ebs_csi_driver.module.helm_releases["aws-ebs-csi-driver"].helm_release.this[0]
+  to   = module.aws_ebs_csi_driver.helm_release.this["aws-ebs-csi-driver"]
+}
+
+moved {
+  from = module.aws_load_balancer_controller.module.helm_releases["aws-load-balancer-controller"].helm_release.this[0]
+  to   = module.aws_load_balancer_controller.helm_release.this["aws-load-balancer-controller"]
+}
+
+moved {
+  from = module.ingress-nginx.module.helm_releases["ingress-nginx"].helm_release.this[0]
+  to   = module.ingress-nginx.helm_release.this["ingress-nginx"]
+}
+
+moved {
+  from = module.cluster_autoscaler.module.helm_releases["cluster-autoscaler"].helm_release.this[0]
+  to   = module.cluster_autoscaler.helm_release.this["cluster-autoscaler"]
+}
+
+moved {
+  from = module.external_dns.module.helm_releases["external-dns"].helm_release.this[0]
+  to   = module.external_dns.helm_release.this["external-dns"]
+}
+
+module "aws-cloud-controller-manager" {
+  source = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/talos"
+
+  cluster_name = var.cluster_name
+
+  addons = {
+    aws-cloud-controller-manager = {
+      enabled      = true
+      extra_values = <<-EXTRA_VALUES
+      image:
+        tag: ${var.kubernetes_version}
+      EXTRA_VALUES
+    }
+  }
+}
+
 module "cert_manager" {
   source = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/aws"
 
@@ -398,6 +459,45 @@ module "external_dns" {
   }
 }
 
+module "flux_operator" {
+  source = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/generic"
+
+  cluster_name = var.cluster_name
+
+  addons = {
+    flux-operator = {
+      enabled = true
+      helm_release = {
+        extra_values = <<-EXTRA_VALUES
+        multitenancy:
+          enabled: true
+        EXTRA_VALUES
+      }
+    }
+  }
+}
+
+module "flux_instance" {
+  depends_on = [module.flux_operator]
+  source     = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/generic"
+
+  cluster_name = var.cluster_name
+
+  addons = {
+    flux-instance = {
+      enabled = true
+      helm_release = {
+        extra_values = <<-EXTRA_VALUES
+        instance:
+          cluster:
+            multitenant: true
+          distribution:
+            version: v2.7.5
+        EXTRA_VALUES
+      }
+    }
+  }
+}
 
 module "node_pools_primary" {
   source = "../../modules/node-pools/aws"

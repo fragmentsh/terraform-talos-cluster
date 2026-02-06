@@ -24,6 +24,16 @@ resource "aws_iam_instance_profile" "control_plane" {
   tags = local.resource_tags
 }
 
+# Minimal IAM policy for control plane instances
+#
+# Since we use IRSA (IAM Roles for Service Accounts), AWS integrations like
+# EBS CSI Driver, Load Balancer Controller, and Cluster Autoscaler get their
+# permissions via pod-level IAM roles, NOT instance roles.
+#
+# The control plane instances only need minimal permissions for:
+# - Talos Cloud Controller Manager to identify the node/region
+# - Basic instance metadata operations
+#
 resource "aws_iam_role_policy" "control_plane" {
   name = "${var.cluster_name}-control-plane"
   role = aws_iam_role.control_plane.id
@@ -32,102 +42,16 @@ resource "aws_iam_role_policy" "control_plane" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "TalosCloudControllerManager"
         Effect = "Allow"
         Action = [
-          "autoscaling:DescribeAutoScalingGroups",
-          "autoscaling:DescribeLaunchConfigurations",
-          "autoscaling:DescribeTags",
+          # Required for Talos CCM to identify node and populate node labels
           "ec2:DescribeInstances",
           "ec2:DescribeRegions",
-          "ec2:DescribeRouteTables",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeSubnets",
-          "ec2:DescribeVolumes",
           "ec2:DescribeAvailabilityZones",
-          "ec2:DescribeVpcs",
           "ec2:DescribeInstanceTopology"
         ]
         Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:CreateSecurityGroup",
-          "ec2:CreateTags",
-          "ec2:CreateVolume",
-          "ec2:ModifyInstanceAttribute",
-          "ec2:ModifyVolume",
-          "ec2:AttachVolume",
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:CreateRoute",
-          "ec2:DeleteRoute",
-          "ec2:DeleteSecurityGroup",
-          "ec2:DeleteVolume",
-          "ec2:DetachVolume",
-          "ec2:RevokeSecurityGroupIngress"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticloadbalancing:AddTags",
-          "elasticloadbalancing:AttachLoadBalancerToSubnets",
-          "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
-          "elasticloadbalancing:CreateLoadBalancer",
-          "elasticloadbalancing:CreateLoadBalancerPolicy",
-          "elasticloadbalancing:CreateLoadBalancerListeners",
-          "elasticloadbalancing:ConfigureHealthCheck",
-          "elasticloadbalancing:DeleteLoadBalancer",
-          "elasticloadbalancing:DeleteLoadBalancerListeners",
-          "elasticloadbalancing:DescribeLoadBalancers",
-          "elasticloadbalancing:DescribeLoadBalancerAttributes",
-          "elasticloadbalancing:DetachLoadBalancerFromSubnets",
-          "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-          "elasticloadbalancing:ModifyLoadBalancerAttributes",
-          "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-          "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-          "elasticloadbalancing:CreateListener",
-          "elasticloadbalancing:CreateTargetGroup",
-          "elasticloadbalancing:DeleteListener",
-          "elasticloadbalancing:DeleteTargetGroup",
-          "elasticloadbalancing:DescribeListeners",
-          "elasticloadbalancing:DescribeLoadBalancerPolicies",
-          "elasticloadbalancing:DescribeTargetGroups",
-          "elasticloadbalancing:DescribeTargetHealth",
-          "elasticloadbalancing:ModifyListener",
-          "elasticloadbalancing:ModifyTargetGroup",
-          "elasticloadbalancing:RegisterTargets",
-          "elasticloadbalancing:DeregisterTargets",
-          "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:CreateServiceLinkedRole"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "kms:DescribeKey"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "secretsmanager:ResourceTag/kubernetes.io/cluster/${var.cluster_name}" = "owned"
-          }
-        }
       }
     ]
   })

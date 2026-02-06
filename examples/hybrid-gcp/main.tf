@@ -185,6 +185,11 @@ resource "talos_cluster_kubeconfig" "talos" {
   node                 = module.control_plane.external_ips[0]
 }
 
+moved {
+  from = module.cilium.module.helm_releases["cilium"].helm_release.this[0]
+  to   = module.cilium.helm_release.this["cilium"]
+}
+
 module "cilium" {
   source = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/talos"
 
@@ -195,4 +200,4 @@ module "cilium" {
       enabled = true
     }
   }
-} #
+}

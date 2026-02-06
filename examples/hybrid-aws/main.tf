@@ -521,4 +521,3 @@ module "node_pools_primary" {
 #     Environment = "demo"
 #   }
 # }
-

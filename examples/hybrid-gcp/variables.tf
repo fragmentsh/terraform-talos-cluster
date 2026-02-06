@@ -31,5 +31,5 @@ variable "kubernetes_version" {
 variable "talos_version" {
   description = "The version of Talos OS to use."
   type        = string
-  default     = "v1.11.6"
+  default     = "v1.12.1"
 }

@@ -1,21 +1,26 @@
 terraform {
-  required_version = ">= 1.5.7"
+  required_version = ">= 1.13.0"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6"
-    }
-    google = {
-      source  = "hashicorp/google"
-      version = "< 8.0.0"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = "< 8.0.0"
+      version = "~> 6.0"
     }
     talos = {
       source  = "siderolabs/talos"
-      version = "0.10.0-beta.0"
+      version = "0.10.1"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 3"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0, != 2.12"
+    }
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = "~> 2.0"
     }
   }
 }

@@ -9,7 +9,12 @@ provider "google-beta" {
 }
 
 provider "helm" {
-  kubernetes = talos_cluster_kubeconfig.talos.kubernetes_client_configuration
+  kubernetes = {
+    host                   = talos_cluster_kubeconfig.talos.kubernetes_client_configuration.host
+    cluster_ca_certificate = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.ca_certificate)
+    client_certificate     = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.client_certificate)
+    client_key             = base64decode(talos_cluster_kubeconfig.talos.kubernetes_client_configuration.client_key)
+  }
 }
 
 module "factory_gcp" {
@@ -158,27 +163,35 @@ data "talos_client_configuration" "talos" {
   client_configuration = module.control_plane.talos_client_configuration
   endpoints            = module.control_plane.external_ips
   nodes = concat(
-    module.control_plane.external_ips,
-    module.node_pools.external_ips
+    module.control_plane.private_ips,
+    module.node_pools.private_ips
   )
 }
 
 data "talos_cluster_health" "talos" {
+  depends_on           = [module.cilium]
   client_configuration = module.control_plane.talos_client_configuration
-  control_plane_nodes  = module.control_plane.external_ips
+  control_plane_nodes  = module.control_plane.private_ips
+  worker_nodes         = module.node_pools.private_ips
   endpoints            = module.control_plane.external_ips
+
+  timeouts = {
+    read = "1m"
+  }
 }
 
 resource "talos_cluster_kubeconfig" "talos" {
-  depends_on = [
-    data.talos_cluster_health.talos
-  ]
   client_configuration = module.control_plane.talos_client_configuration
   node                 = module.control_plane.external_ips[0]
 }
 
+moved {
+  from = module.cilium.module.helm_releases["cilium"].helm_release.this[0]
+  to   = module.cilium.helm_release.this["cilium"]
+}
+
 module "cilium" {
-  source = "/Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/talos"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/talos?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 

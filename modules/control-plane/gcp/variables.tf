@@ -16,7 +16,7 @@ variable "region" {
 variable "talos_version" {
   description = "The version of Talos OS to use for the control plane instances."
   type        = string
-  default     = "v1.11.6"
+  default     = "v1.12.1"
 }
 
 variable "talos_image" {
@@ -35,7 +35,7 @@ variable "talos_image" {
 variable "kubernetes_version" {
   description = "The version of Kubernetes to deploy on the Talos control plane."
   type        = string
-  default     = "v1.34.2"
+  default     = "v1.35.0"
 }
 
 variable "control_plane" {

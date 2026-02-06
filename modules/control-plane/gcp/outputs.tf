@@ -26,6 +26,11 @@ output "external_ips" {
   value = local.control_plane_external_ips
 }
 
+output "private_ips" {
+  description = "Private IP addresses of control plane instances"
+  value       = local.control_plane_private_ips
+}
+
 output "talos_machine_secrets" {
   sensitive = true
   value     = talos_machine_secrets.talos.machine_secrets

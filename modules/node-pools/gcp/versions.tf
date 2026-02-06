@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.5.7"
+  required_version = ">= 1.13.0"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -11,7 +11,7 @@ terraform {
     }
     talos = {
       source  = "siderolabs/talos"
-      version = "0.10.0-beta.0"
+      version = "0.10.0"
     }
   }
 }

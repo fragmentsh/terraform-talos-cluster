@@ -3,23 +3,23 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.7 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.13.0 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | < 8.0.0 |
 | <a name="requirement_google-beta"></a> [google-beta](#requirement\_google-beta) | < 8.0.0 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 3 |
-| <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.10.0-beta.0 |
+| <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.10.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_talos"></a> [talos](#provider\_talos) | 0.10.0-beta.0 |
+| <a name="provider_talos"></a> [talos](#provider\_talos) | 0.10.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cilium"></a> [cilium](#module\_cilium) | /Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/talos | n/a |
+| <a name="module_cilium"></a> [cilium](#module\_cilium) | github.com/fragmentsh/terraform-kubernetes-addons//modules/talos | v1.5.0 |
 | <a name="module_control_plane"></a> [control\_plane](#module\_control\_plane) | ../../modules/control-plane/gcp | n/a |
 | <a name="module_factory_gcp"></a> [factory\_gcp](#module\_factory\_gcp) | ../../modules/factory | n/a |
 | <a name="module_network"></a> [network](#module\_network) | terraform-google-modules/network/google | ~> 13.0 |
@@ -30,9 +30,9 @@
 
 | Name | Type |
 |------|------|
-| [talos_cluster_kubeconfig.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0-beta.0/docs/resources/cluster_kubeconfig) | resource |
-| [talos_client_configuration.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0-beta.0/docs/data-sources/client_configuration) | data source |
-| [talos_cluster_health.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0-beta.0/docs/data-sources/cluster_health) | data source |
+| [talos_cluster_kubeconfig.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0/docs/resources/cluster_kubeconfig) | resource |
+| [talos_client_configuration.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0/docs/data-sources/client_configuration) | data source |
+| [talos_cluster_health.talos](https://registry.terraform.io/providers/siderolabs/talos/0.10.0/docs/data-sources/cluster_health) | data source |
 
 ## Inputs
 
@@ -43,7 +43,7 @@
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The GCP project ID where resources will be created. | `string` | `"sandbox-archi-0"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The GCP region where resources will be created. | `string` | `"europe-west1"` | no |
 | <a name="input_region_secondary"></a> [region\_secondary](#input\_region\_secondary) | The secondary GCP region for additional resources. | `string` | `"europe-west4"` | no |
-| <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | The version of Talos OS to use. | `string` | `"v1.11.6"` | no |
+| <a name="input_talos_version"></a> [talos\_version](#input\_talos\_version) | The version of Talos OS to use. | `string` | `"v1.12.1"` | no |
 
 ## Outputs
 
@@ -53,5 +53,6 @@
 | <a name="output_control_plane_api_url"></a> [control\_plane\_api\_url](#output\_control\_plane\_api\_url) | n/a |
 | <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | n/a |
 | <a name="output_network"></a> [network](#output\_network) | n/a |
+| <a name="output_node_pools"></a> [node\_pools](#output\_node\_pools) | n/a |
 | <a name="output_talosconfig"></a> [talosconfig](#output\_talosconfig) | n/a |
 <!-- END_TF_DOCS -->

@@ -17,3 +17,7 @@ output "instances_ips_by_pools" {
 output "external_ips" {
   value = local.node_pools_external_ips
 }
+
+output "private_ips" {
+  value = local.node_pools_private_ips
+}

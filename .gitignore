@@ -1,11 +1,45 @@
+# Terraform
 .terragrunt-cache
 .terraform
 .terraform.lock.hcl
-.idea
 terraform.tfstate
 terraform.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Talos artifacts
 talosconfig
 kubeconfig
 *.raw
 *.tar.gz
 *.xz
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (never commit these!)
+*.pem
+*.key
+*secrets*.json
+*credentials*.json
+.env
+.env.*
+
+# Backup files
+*.backup
+*.bak

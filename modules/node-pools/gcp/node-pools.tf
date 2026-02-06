@@ -40,6 +40,12 @@ locals {
       if x.nat_ip != null
     ]
   ])
+
+  node_pools_private_ips = flatten([
+    for pool, ips in local.node_pools_instances_ips_by_pool : [
+      for x in ips : x.internal_ip
+    ]
+  ])
 }
 
 resource "google_service_account" "node_pool" {

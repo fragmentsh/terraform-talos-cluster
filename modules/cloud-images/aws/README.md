@@ -111,7 +111,7 @@ If you need custom Talos images with extensions (e.g., NVIDIA drivers, ZFS), use
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.7 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.13.0 |
 | <a name="requirement_http"></a> [http](#requirement\_http) | 3.5.0 |
 
 ## Providers

@@ -158,7 +158,7 @@ resource "talos_cluster_kubeconfig" "talos" {
 
 
 module "cilium" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/talos?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/talos?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -170,7 +170,7 @@ module "cilium" {
 }
 
 module "aws-cloud-controller-manager" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/talos?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/talos?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -186,7 +186,7 @@ module "aws-cloud-controller-manager" {
 }
 
 module "cert_manager" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -209,7 +209,7 @@ module "cert_manager" {
 module "amazon-eks-pod-identity-webhook" {
   depends_on = [module.cert_manager]
 
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -225,7 +225,7 @@ module "amazon-eks-pod-identity-webhook" {
 }
 
 module "aws_ebs_csi_driver" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -267,7 +267,7 @@ module "aws_ebs_csi_driver" {
 }
 
 module "aws_load_balancer_controller" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -302,7 +302,7 @@ module "aws_load_balancer_controller" {
 module "ingress-nginx" {
   depends_on = [module.aws_load_balancer_controller]
 
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -353,7 +353,7 @@ module "ingress-nginx" {
 }
 
 module "cluster_autoscaler" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -387,7 +387,7 @@ module "cluster_autoscaler" {
 }
 
 module "external_dns" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/aws?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -415,7 +415,7 @@ module "external_dns" {
 }
 
 module "flux_operator" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/generic?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/generic?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 
@@ -434,7 +434,7 @@ module "flux_operator" {
 
 module "flux_instance" {
   depends_on = [module.flux_operator]
-  source     = "github.com/fragmentsh/terraform-kubernetes-addons//modules/generic?ref=v1.4.0"
+  source     = "github.com/fragmentsh/terraform-kubernetes-addons//modules/generic?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 

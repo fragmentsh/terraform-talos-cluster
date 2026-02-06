@@ -191,7 +191,7 @@ moved {
 }
 
 module "cilium" {
-  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/talos?ref=v1.4.0"
+  source = "github.com/fragmentsh/terraform-kubernetes-addons//modules/talos?ref=v1.5.0"
 
   cluster_name = var.cluster_name
 

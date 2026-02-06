@@ -19,7 +19,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cilium"></a> [cilium](#module\_cilium) | /Users/klefevre/git/fragmentsh/terraform-kubernetes-addons//modules/talos | n/a |
+| <a name="module_cilium"></a> [cilium](#module\_cilium) | github.com/fragmentsh/terraform-kubernetes-addons//modules/talos | v1.4.0 |
 | <a name="module_control_plane"></a> [control\_plane](#module\_control\_plane) | ../../modules/control-plane/gcp | n/a |
 | <a name="module_factory_gcp"></a> [factory\_gcp](#module\_factory\_gcp) | ../../modules/factory | n/a |
 | <a name="module_network"></a> [network](#module\_network) | terraform-google-modules/network/google | ~> 13.0 |

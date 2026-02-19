@@ -1,21 +1,10 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
+    "config:best-practices",
     ":separateMajorReleases",
-    ":ignoreUnstable",
     ":prImmediately",
-    ":updateNotScheduled",
-    ":automergeDisabled",
-    ":disableRateLimiting",
-    ":ignoreModulesAndTests",
-    ":gitSignOff",
-    "group:monorepos",
-    "group:recommended",
-    "helpers:disableTypesNodeMajor",
-    "workarounds:all",
-    ":automergeDigest",
-    ":automergePatch",
-    ":automergeMinor",
-    ":dependencyDashboard"
+    ":gitSignOff"
   ],
   "baseBranches": [
     "main"
@@ -26,11 +15,23 @@
     "terraform"
   ],
   "semanticCommits": "enabled",
-  "automergeType": "pr-comment",
-  "automergeComment": "renovate:merge",
-  "commitMessageExtra": "to {{newVersion}} (was {{currentVersion}})",
+  "platformAutomerge": false,
   "prHourlyLimit": 20,
+  "commitMessageExtra": "to {{newVersion}} (was {{currentVersion}})",
   "packageRules": [
+    {
+      "description": "Label PRs by update type",
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["update-major"]
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "addLabels": ["update-minor"]
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "addLabels": ["update-patch"]
+    },
     {
       "matchManagers": [
         "github-actions"
@@ -50,8 +51,7 @@
         "terraform"
       ],
       "semanticCommitScope": "tf",
-      "semanticCommitType": "feat",
-      "automerge": false
+      "semanticCommitType": "feat"
     }
   ]
 }

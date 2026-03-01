@@ -6,7 +6,7 @@
     ":prImmediately",
     ":gitSignOff"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "main"
   ],
   "enabledManagers": [
@@ -21,16 +21,28 @@
   "packageRules": [
     {
       "description": "Label PRs by update type",
-      "matchUpdateTypes": ["major"],
-      "addLabels": ["update-major"]
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "addLabels": [
+        "update-major"
+      ]
     },
     {
-      "matchUpdateTypes": ["minor"],
-      "addLabels": ["update-minor"]
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "addLabels": [
+        "update-minor"
+      ]
     },
     {
-      "matchUpdateTypes": ["patch"],
-      "addLabels": ["update-patch"]
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "addLabels": [
+        "update-patch"
+      ]
     },
     {
       "matchManagers": [

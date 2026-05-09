@@ -6,7 +6,7 @@
     ":prImmediately",
     ":gitSignOff"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "main"
   ],
   "enabledManagers": [

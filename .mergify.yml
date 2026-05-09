@@ -5,7 +5,7 @@ pull_request_rules:
       - "#approved-reviews-by >= 1"
       - check-success = Max TF pre-commit
       - check-success = Validate PR title
-      - draft = false
+      - draft == false
       - label != do-not-merge
     actions:
       merge:
@@ -15,8 +15,8 @@ pull_request_rules:
     conditions:
       - author = renovate[bot]
       - or:
-        - label = update-minor
-        - label = update-patch
+          - label = update-minor
+          - label = update-patch
     actions:
       review:
         type: APPROVE
@@ -28,10 +28,10 @@ pull_request_rules:
       - author = renovate[bot]
       - check-success = Max TF pre-commit
       - check-success = Validate PR title
-      - draft = false
+      - draft == false
       - or:
-        - label = update-minor
-        - label = update-patch
+          - label = update-minor
+          - label = update-patch
     actions:
       merge:
         method: squash
@@ -40,7 +40,7 @@ pull_request_rules:
     conditions:
       - base = release
       - "#approved-reviews-by >= 1"
-      - draft = false
+      - draft == false
     actions:
       merge:
         method: merge

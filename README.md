@@ -4,7 +4,7 @@
   <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pre-commit.yml"><img alt="Pre-Commit" src="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pre-commit.yml/badge.svg"></a>
   <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pr-title.yml"><img alt="Validate PR title" src="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pr-title.yml/badge.svg"></a>
   <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/release.yml"><img alt="Release" src="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/release.yml/badge.svg"></a>
-  <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/shardlabsxyz/terraform-talos-cluster?sort=semver"></a>
+  <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/releases"><img alt="Latest Release" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fshardlabsxyz%2Fterraform-talos-cluster%2Freleases%2Flatest&amp;query=%24.tag_name&amp;label=release"></a>
   <a href="https://developer.hashicorp.com/terraform"><img alt="Terraform >= 1.13.0" src="https://img.shields.io/badge/Terraform-%3E%3D%201.13.0-844FBA?logo=terraform"></a>
   <a href="https://pre-commit.com/"><img alt="pre-commit enabled" src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>

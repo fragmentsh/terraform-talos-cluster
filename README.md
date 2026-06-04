@@ -1,15 +1,37 @@
 # Terraform Talos Cluster
 
-[![Pre-Commit](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/pre-commit.yml)
-[![Release](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/release.yml/badge.svg)](https://github.com/fragmentsh/terraform-talos-cluster/actions/workflows/release.yml)
+<p align="center">
+  <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pre-commit.yml"><img alt="Pre-Commit" src="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pre-commit.yml/badge.svg"></a>
+  <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pr-title.yml"><img alt="Validate PR title" src="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/pr-title.yml/badge.svg"></a>
+  <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/release.yml"><img alt="Release" src="https://github.com/shardlabsxyz/terraform-talos-cluster/actions/workflows/release.yml/badge.svg"></a>
+  <a href="https://github.com/shardlabsxyz/terraform-talos-cluster/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/shardlabsxyz/terraform-talos-cluster?sort=semver"></a>
+  <a href="https://developer.hashicorp.com/terraform"><img alt="Terraform >= 1.13.0" src="https://img.shields.io/badge/Terraform-%3E%3D%201.13.0-844FBA?logo=terraform"></a>
+  <a href="https://pre-commit.com/"><img alt="pre-commit enabled" src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+</p>
 
-Production-ready Terraform modules for deploying **hybrid [Talos](https://www.talos.dev/) Kubernetes clusters** across multiple cloud providers and regions.
+Terraform modules for deploying **hybrid [Talos](https://www.talos.dev/) Kubernetes clusters** with a cloud-hosted control plane and worker node pools that can run across cloud providers or on your own infrastructure.
 
 ## Why This Project?
 
-The main goal is to replicate a managed control plane where you can bring your own node, especially bare metal one, while having a your control plane running in the cloud with all the benefits.
+Managed Kubernetes services give you a stable cloud control plane, but they make it difficult to bring your own workers across clouds, edge locations, or bare metal. This project keeps the control-plane ergonomics of a managed service while leaving node placement under your control.
 
-By leveraging Talos and Kubespan, this project enable hybrid Kubernetges clusters with a single control plane and worker nodes across multiple clouds and on-premises environments.
+Talos provides an immutable, API-managed Kubernetes host OS. Kubespan provides WireGuard-based node-to-node networking, so nodes can join the same cluster without requiring cloud network peering or VPNs between every location.
+
+## What You Get
+
+- A decoupled control plane and node pool model, similar to managed Kubernetes.
+- AWS and GCP control plane modules.
+- AWS and GCP worker node pool modules.
+- Official Talos cloud image lookup and custom image factory modules.
+- Complete AWS and GCP examples with Cilium and common add-ons.
+- Pre-commit, Renovate, Mergify, and GitHub Actions wiring for module maintenance.
+
+## When To Use It
+
+Use this project when you want a Talos Kubernetes cluster with a stable cloud control plane and the option to attach workers from other clouds, regions, edge sites, or bare metal.
+
+This project is not trying to replace EKS or GKE feature-for-feature. Cloud-provider integrations such as load balancers, CSI drivers, and cluster autoscalers are still bound by each provider's regional and network assumptions.
 
 ## Architecture
 
@@ -21,38 +43,14 @@ By leveraging Talos and Kubespan, this project enable hybrid Kubernetges cluster
 | **Kubespan mesh networking** | Built-in WireGuard-based mesh network connects all nodes regardless of network topology. No VPN or peering required between clouds.                                            |
 | **Immutable infrastructure** | Talos OS is API-managed, read-only, and minimal. No SSH, no shell, no package manager = reduced attack surface.                                                                |
 
-## Multi region node pools on cloud provider considerations
+### Deployment Model
 
-The main goal of this project is to provide a stable control plane, and cloud node pools with cloud provider integration to be able to run middleware, monitoring, etc. And then allow you to bring your own bare metal node.
-
-The goal is not to provide a fully vertical cloud provider integration experience as cloud managed solutions already provides this experience but with some locking (GKE, EKS, etc).
-
-If you wish to experiment with cloud multi-region node pools, running in multiple regions of the same cloud provider has some downside and trade off. Depending on the target architecture issue may arises. I've tried to compile findings below.
-
-### AWS control plane with AWS node pools in different regions
-
-> **Important**: While you can technically run AWS node pools in multiple regions (e.g., `us-west-2` + `eu-west-1`), cloud-provider-specific components are **single-region by design**:
->
-> - **AWS Cloud Controller Manager** - single region only
-> - **AWS EBS CSI Driver** - volumes are regional, cannot attach cross-region
-> - **AWS Load Balancer Controller** - creates load balancers in one region in only one VPC
-> - **Cluster Autoscaler** - manage ASG in a single region
-
-Which means that only one node pool will be able to leverage the above components fully. The node pools in the secondary region will not be able to provision EBS volumes, use AWS load balancers, or be managed by the cluster-autoscaler.
-
-This setup can be appropriate if you need fully stateless worker node.
-
-> **Warning - AWS CCM Node Lifecycle**: If running node pools in multiple AWS regions, you **must disable** the AWS Cloud Controller Manager's node lifecycle controller. When enabled, the CCM will attempt to delete nodes it cannot find in its configured region, causing all nodes in other regions to be removed from the cluster.
-
-### AWS control plane with AWS node pool in the same region and GCP node pool in another region
-
-This setup should work as long as you only use 1 region in each cloud provider, you should be able to leverage the cloud provider integrations of each cloud.
-
-## Best practice for hybrid deployments
-
-> - Use a **single cloud provider region** for control plane + node pools in the same region on the same cloud provider
-> - Deploy node pools in the same region of another cloud provider
-> - Bring your own bare metal nodes
+| Layer             | Responsibility                                                                 |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Control plane     | Stable Talos control plane nodes, API load balancer, machine secrets, kubeconfig |
+| Node pools        | Replaceable worker capacity for application workloads                          |
+| Cloud integrations | Optional provider-specific controllers, storage drivers, load balancers       |
+| Kubespan          | Encrypted node mesh for hybrid and cross-network connectivity                  |
 
 ## Supported Cloud Providers
 
@@ -69,10 +67,37 @@ This setup should work as long as you only use 1 region in each cloud provider, 
 
 | Tool                                                                            | Version  | Purpose                                |
 | ------------------------------------------------------------------------------- | -------- | -------------------------------------- |
-| [Terraform](https://www.terraform.io/downloads)                                 | >= 1.5.7 | Infrastructure provisioning            |
+| [Terraform](https://www.terraform.io/downloads)                                 | >= 1.13.0 | Infrastructure provisioning           |
 | [talosctl](https://www.talos.dev/latest/introduction/getting-started/#talosctl) | >= 1.6.0 | Talos cluster management               |
 | [kubectl](https://kubernetes.io/docs/tasks/tools/)                              | >= 1.28  | Kubernetes management                  |
 | [OpenSSL](https://www.openssl.org/)                                             | Any      | Required for IRSA key generation (AWS) |
+
+This repository includes a [.mise.toml](./.mise.toml) file for local tool versions. If you use [mise](https://mise.jdx.dev/), run:
+
+```bash
+mise trust
+mise install
+```
+
+## Quick Start
+
+Choose the example closest to your target cloud, review its README, and create a Terraform plan:
+
+```bash
+cd examples/hybrid-aws
+terraform init
+terraform plan -out=tfplan
+```
+
+For GCP:
+
+```bash
+cd examples/hybrid-gcp
+terraform init
+terraform plan -out=tfplan
+```
+
+Review the plan before applying it. The examples create real cloud infrastructure and require provider credentials for the selected cloud.
 
 ## Modules
 
@@ -104,11 +129,36 @@ This setup should work as long as you only use 1 region in each cloud provider, 
 | [hybrid-aws](./examples/hybrid-aws) | Complete AWS deployment with control plane, node pools, Cilium CNI, and common add-ons |
 | [hybrid-gcp](./examples/hybrid-gcp) | Complete GCP deployment with multi-region node pools                                   |
 
+## Hybrid Deployment Guidance
+
+For the least surprising cloud-provider behavior:
+
+- Run the control plane and primary cloud node pool in one region of the same provider.
+- Use one region per additional cloud provider.
+- Use secondary-region or bare-metal workers for stateless workloads unless you have validated storage, load balancer, and autoscaler behavior.
+
+### AWS Multi-Region Caveats
+
+While AWS node pools can technically run in multiple regions, cloud-provider-specific components are single-region by design:
+
+- **AWS Cloud Controller Manager** targets one region.
+- **AWS EBS CSI Driver** works with regional volumes.
+- **AWS Load Balancer Controller** creates load balancers in one region and VPC.
+- **Cluster Autoscaler** manages Auto Scaling Groups in its configured region.
+
+Only the primary node pool will fully use those integrations. Secondary-region AWS workers should be treated as stateless capacity unless you provide separate workload-specific handling.
+
+If you run AWS node pools in multiple regions, disable the AWS Cloud Controller Manager node lifecycle controller. Otherwise it can delete nodes it cannot find in its configured region.
+
+### Cross-Cloud Node Pools
+
+Running one AWS region and one GCP region is a better fit than multiple regions of the same cloud provider. Each cloud provider integration can operate in its own region while Kubespan carries the cluster node mesh.
+
 ## Post-Deployment
 
 ### Install a CNI (Required)
 
-The cluster ships without a CNI but Cilium deployments is present the examples folders.
+The cluster ships without a CNI, but Cilium deployments are present in the example folders.
 
 ### Verify Cluster Health
 
@@ -175,7 +225,7 @@ talosctl --talosconfig talosconfig upgrade-k8s \
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.md) before submitting a PR.
+Contributions are welcome! Please read our [Contributing Guide](./.github/CONTRIBUTING.md) before submitting a PR.
 
 ### Development Setup
 

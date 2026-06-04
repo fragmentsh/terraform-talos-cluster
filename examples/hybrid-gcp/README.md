@@ -1,3 +1,9 @@
+# Hybrid GCP Example
+
+This example deploys a Talos Kubernetes cluster on GCP with a regional control plane, node pools, Cilium, and supporting network resources.
+
+Use it as a complete GCP reference deployment before adapting the module inputs for your own project, regions, and image strategy.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -19,7 +25,7 @@
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
-| <a name="module_cilium"></a> [cilium](#module\_cilium) | github.com/fragmentsh/terraform-kubernetes-addons//modules/talos | v1.5.0 |
+| <a name="module_cilium"></a> [cilium](#module\_cilium) | github.com/shardlabsxyz/terraform-kubernetes-addons//modules/talos | v1.5.0 |
 | <a name="module_control_plane"></a> [control\_plane](#module\_control\_plane) | ../../modules/control-plane/gcp | n/a |
 | <a name="module_factory_gcp"></a> [factory\_gcp](#module\_factory\_gcp) | ../../modules/factory | n/a |
 | <a name="module_network"></a> [network](#module\_network) | terraform-google-modules/network/google | ~> 13.0 |

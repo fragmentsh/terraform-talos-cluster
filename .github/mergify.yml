@@ -13,25 +13,31 @@ pull_request_rules:
 
   - name: Automatically approve minor/patch Renovate PRs
     conditions:
+      - base = main
       - author = renovate[bot]
+      - draft == false
+      - label != do-not-merge
       - or:
           - label = update-minor
           - label = update-patch
+          - label = update-digest
     actions:
       review:
         type: APPROVE
-        message: Automatically approved (minor/patch update)
+        message: Automatically approved (non-major Renovate update)
 
-  - name: Automatic merge Renovate PRs (minor/patch)
+  - name: Automatic merge Renovate PRs (non-major)
     conditions:
       - base = main
       - author = renovate[bot]
       - check-success = Max TF pre-commit
       - check-success = Validate PR title
       - draft == false
+      - label != do-not-merge
       - or:
           - label = update-minor
           - label = update-patch
+          - label = update-digest
     actions:
       merge:
         method: squash

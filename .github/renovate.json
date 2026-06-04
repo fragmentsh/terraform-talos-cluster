@@ -4,20 +4,26 @@
     "config:best-practices",
     ":separateMajorReleases",
     ":prImmediately",
-    ":gitSignOff"
+    ":gitSignOff",
+    "helpers:pinGitHubActionDigests"
   ],
   "baseBranchPatterns": [
     "main"
   ],
   "enabledManagers": [
     "github-actions",
+    "mise",
     "pre-commit",
     "terraform"
   ],
   "semanticCommits": "enabled",
+  "automerge": false,
   "platformAutomerge": false,
   "prHourlyLimit": 20,
   "commitMessageExtra": "to {{newVersion}} (was {{currentVersion}})",
+  "pre-commit": {
+    "enabled": true
+  },
   "packageRules": [
     {
       "description": "Label PRs by update type",
@@ -33,14 +39,21 @@
       "addLabels": ["update-patch"]
     },
     {
+      "description": "Label digest pinning and digest refreshes",
+      "matchUpdateTypes": ["digest", "pinDigest"],
+      "addLabels": ["update-digest"]
+    },
+    {
       "matchManagers": [
         "github-actions"
       ],
+      "pinDigests": true,
       "semanticCommitScope": "ci",
       "semanticCommitType": "chore"
     },
     {
       "matchManagers": [
+        "mise",
         "pre-commit"
       ],
       "semanticCommitScope": "ci",

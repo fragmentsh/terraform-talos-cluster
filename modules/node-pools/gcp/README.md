@@ -1,42 +1,48 @@
+# GCP Node Pools Module for Talos Kubernetes
+
+This module creates replaceable Talos worker node pools on GCP using regional managed instance groups.
+
+Use it with the GCP control plane module outputs for Talos machine secrets, client configuration, and Kubernetes API endpoint wiring.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.13.0 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | < 8.0.0 |
 | <a name="requirement_google-beta"></a> [google-beta](#requirement\_google-beta) | < 8.0.0 |
-| <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.10.0 |
+| <a name="requirement_talos"></a> [talos](#requirement\_talos) | 0.11.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_google-beta"></a> [google-beta](#provider\_google-beta) | < 8.0.0 |
-| <a name="provider_talos"></a> [talos](#provider\_talos) | 0.10.0 |
+| <a name="provider_talos"></a> [talos](#provider\_talos) | 0.11.0 |
 
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_node_pool_instance_template"></a> [node\_pool\_instance\_template](#module\_node\_pool\_instance\_template) | terraform-google-modules/vm/google//modules/instance_template | ~> 13 |
 | <a name="module_node_pool_mig"></a> [node\_pool\_mig](#module\_node\_pool\_mig) | terraform-google-modules/vm/google//modules/mig | ~> 13.0 |
 
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [google-beta_google_compute_firewall.node_pool_external](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_compute_firewall) | resource |
 | [google-beta_google_service_account.node_pool](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_service_account) | resource |
-| [talos_machine_configuration_apply.node_pool](https://registry.terraform.io/providers/siderolabs/talos/0.10.0/docs/resources/machine_configuration_apply) | resource |
+| [talos_machine_configuration_apply.node_pool](https://registry.terraform.io/providers/siderolabs/talos/0.11.0/docs/resources/machine_configuration_apply) | resource |
 | [google-beta_google_compute_instance.node_pool_instance](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/data-sources/google_compute_instance) | data source |
 | [google-beta_google_compute_region_instance_group.node_pool](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/data-sources/google_compute_region_instance_group) | data source |
-| [talos_machine_configuration.node_pool](https://registry.terraform.io/providers/siderolabs/talos/0.10.0/docs/data-sources/machine_configuration) | data source |
+| [talos_machine_configuration.node_pool](https://registry.terraform.io/providers/siderolabs/talos/0.11.0/docs/data-sources/machine_configuration) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the Talos cluster. | `string` | n/a | yes |
 | <a name="input_kubernetes_api_url"></a> [kubernetes\_api\_url](#input\_kubernetes\_api\_url) | The URL of the Kubernetes API server. | `string` | n/a | yes |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | The version of Kubernetes to deploy on the Talos control plane. | `string` | `"v1.35.0"` | no |
@@ -51,7 +57,7 @@
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_external_ips"></a> [external\_ips](#output\_external\_ips) | n/a |
 | <a name="output_instance_templates"></a> [instance\_templates](#output\_instance\_templates) | n/a |
 | <a name="output_instances"></a> [instances](#output\_instances) | n/a |

@@ -236,8 +236,8 @@ Breaking changes include:
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/fragmentsh/terraform-talos-cluster/discussions)
-- Check existing [Issues](https://github.com/fragmentsh/terraform-talos-cluster/issues)
+- Open a [Discussion](https://github.com/shardlabsxyz/terraform-talos-cluster/discussions)
+- Check existing [Issues](https://github.com/shardlabsxyz/terraform-talos-cluster/issues)
 
 ## License
 

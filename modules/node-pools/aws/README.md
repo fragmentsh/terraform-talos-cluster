@@ -41,15 +41,15 @@ Unlike the control plane module which uses 1 ASG per node (for etcd persistence)
 
 ```hcl
 module "node_pools" {
-  source = "github.com/fragmentsh/terraform-talos-cluster//modules/node-pools/aws"
+  source = "github.com/shardlabsxyz/terraform-talos-cluster//modules/node-pools/aws"
 
   cluster_name   = "my-cluster"
   region         = "us-west-2"
   vpc_id         = "vpc-12345678"
   talos_image_id = "ami-0123456789abcdef0"
 
-  kubernetes_version         = "v1.34.2"
-  talos_version              = "v1.11.6"
+  kubernetes_version         = "v1.35.0"
+  talos_version              = "v1.12.2"
   kubernetes_api_url         = module.control_plane.kubernetes_api_url
   talos_client_configuration = module.control_plane.talos_client_configuration
   talos_machine_secrets      = module.control_plane.talos_machine_secrets
@@ -78,7 +78,7 @@ module "node_pools" {
 
 ```hcl
 module "node_pools" {
-  source = "github.com/fragmentsh/terraform-talos-cluster//modules/node-pools/aws"
+  source = "github.com/shardlabsxyz/terraform-talos-cluster//modules/node-pools/aws"
 
   cluster_name   = "my-cluster"
   region         = "us-west-2"
@@ -258,12 +258,12 @@ The node pool module requires outputs from the control plane module:
 
 ```hcl
 module "control_plane" {
-  source = "github.com/fragmentsh/terraform-talos-cluster//modules/control-plane/aws"
+  source = "github.com/shardlabsxyz/terraform-talos-cluster//modules/control-plane/aws"
   # ... control plane configuration
 }
 
 module "node_pools" {
-  source = "github.com/fragmentsh/terraform-talos-cluster//modules/node-pools/aws"
+  source = "github.com/shardlabsxyz/terraform-talos-cluster//modules/node-pools/aws"
 
   # Required from control plane
   kubernetes_api_url         = module.control_plane.kubernetes_api_url
@@ -304,8 +304,8 @@ data "talos_cluster_health" "talos" {
 | talos_client_configuration | Talos client config from control plane | `any` | n/a | yes |
 | talos_machine_secrets | Talos machine secrets from control plane | `any` | n/a | yes |
 | node_pools | Map of node pool configurations | `map(object)` | n/a | yes |
-| talos_version | Talos OS version | `string` | `"v1.11.6"` | no |
-| kubernetes_version | Kubernetes version | `string` | `"v1.34.2"` | no |
+| talos_version | Talos OS version | `string` | `"v1.12.2"` | no |
+| kubernetes_version | Kubernetes version | `string` | `"v1.35.0"` | no |
 | tags | Tags for all resources | `map(string)` | `{}` | no |
 
 ### Node Pool Configuration

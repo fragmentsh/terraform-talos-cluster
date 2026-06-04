@@ -19,6 +19,7 @@
   "semanticCommits": "enabled",
   "automerge": false,
   "platformAutomerge": false,
+  "rebaseWhen": "behind-base-branch",
   "prHourlyLimit": 20,
   "commitMessageExtra": "to {{newVersion}} (was {{currentVersion}})",
   "pre-commit": {
@@ -26,15 +27,17 @@
   },
   "packageRules": [
     {
-      "description": "Label PRs by update type",
+      "description": "Label major updates",
       "matchUpdateTypes": ["major"],
-      "addLabels": ["update-major"]
+      "addLabels": ["update-major", "breaking-change"]
     },
     {
+      "description": "Label minor updates",
       "matchUpdateTypes": ["minor"],
       "addLabels": ["update-minor"]
     },
     {
+      "description": "Label patch updates",
       "matchUpdateTypes": ["patch"],
       "addLabels": ["update-patch"]
     },
@@ -50,6 +53,22 @@
       "pinDigests": true,
       "semanticCommitScope": "ci",
       "semanticCommitType": "chore"
+    },
+    {
+      "description": "Only low-risk automation updates are eligible for Mergify automerge",
+      "matchManagers": [
+        "github-actions",
+        "mise",
+        "pre-commit"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "addLabels": [
+        "automerge-candidate"
+      ]
     },
     {
       "matchManagers": [

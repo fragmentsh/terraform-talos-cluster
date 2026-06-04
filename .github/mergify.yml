@@ -5,7 +5,7 @@ pull_request_rules:
       - "#approved-reviews-by >= 1"
       - check-success = Max TF pre-commit
       - check-success = Validate PR title
-      - draft == false
+      - -draft
       - label != do-not-merge
     actions:
       merge:
@@ -15,29 +15,27 @@ pull_request_rules:
     conditions:
       - base = main
       - author = renovate[bot]
-      - draft == false
+      - -draft
       - label != do-not-merge
-      - or:
-          - label = update-minor
-          - label = update-patch
-          - label = update-digest
+      - label = automerge-candidate
+      - label != update-major
+      - label != breaking-change
     actions:
       review:
         type: APPROVE
-        message: Automatically approved (non-major Renovate update)
+        message: Automatically approved (safe Renovate update)
 
-  - name: Automatic merge Renovate PRs (non-major)
+  - name: Automatic merge Renovate PRs (safe updates)
     conditions:
       - base = main
       - author = renovate[bot]
       - check-success = Max TF pre-commit
       - check-success = Validate PR title
-      - draft == false
+      - -draft
       - label != do-not-merge
-      - or:
-          - label = update-minor
-          - label = update-patch
-          - label = update-digest
+      - label = automerge-candidate
+      - label != update-major
+      - label != breaking-change
     actions:
       merge:
         method: squash
@@ -46,7 +44,7 @@ pull_request_rules:
     conditions:
       - base = release
       - "#approved-reviews-by >= 1"
-      - draft == false
+      - -draft
     actions:
       merge:
         method: merge
